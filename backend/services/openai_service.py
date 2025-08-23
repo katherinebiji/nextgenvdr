@@ -1,4 +1,4 @@
-import openai
+from openai import OpenAI, APIConnectionError, RateLimitError, APIStatusError
 import os
 import base64
 import json
@@ -7,11 +7,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
 class OpenAIService:
     def __init__(self):
-        self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY environment variable is required")
+        self.client = OpenAI(api_key=api_key)
     
     def analyze_document(self, document_content: str, document_name: str) -> Dict[str, Any]:
         try:
@@ -40,6 +41,24 @@ class OpenAIService:
             analysis_text = response.choices[0].message.content
             return self._parse_analysis_response(analysis_text)
             
+        except APIConnectionError as e:
+            return {
+                "summary": "Error: Could not connect to OpenAI API",
+                "key_points": [],
+                "suggested_tags": ["document"]
+            }
+        except RateLimitError as e:
+            return {
+                "summary": "Error: OpenAI API rate limit exceeded",
+                "key_points": [],
+                "suggested_tags": ["document"]
+            }
+        except APIStatusError as e:
+            return {
+                "summary": f"Error: OpenAI API returned status {e.status_code}",
+                "key_points": [],
+                "suggested_tags": ["document"]
+            }
         except Exception as e:
             return {
                 "summary": f"Error analyzing document: {str(e)}",
