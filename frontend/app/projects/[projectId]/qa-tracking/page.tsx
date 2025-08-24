@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import { QATrackingTable } from "@/components/qa-tracking-table"
 import { QuestionDrawer } from "@/components/question-drawer"
 import { BreadcrumbNav } from "@/components/breadcrumb-nav"
+import { Chatbot } from "@/components/chatbot"
 import { mockQATrackingItems } from "@/lib/mock-data"
 
 export default function QATrackingPage() {
@@ -66,6 +67,9 @@ export default function QATrackingPage() {
 
       {/* Question Drawer */}
       {selectedItem && <QuestionDrawer question={selectedItem} isOpen={isDrawerOpen} onClose={handleDrawerClose} />}
+      
+      {/* Chatbot */}
+      <Chatbot />
     </div>
   )
 }
