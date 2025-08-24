@@ -12,7 +12,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useAppStore } from "@/lib/store"
-import type { File as StoreFile } from "@/lib/store"
+import type { File as StoreFile, Folder } from "@/lib/store"
+import { mockFolders } from "@/lib/mock-data"
 
 interface UploadFile {
   id: string
@@ -37,47 +38,89 @@ interface FilePreview {
   accessUsers: string[]
 }
 
-const folders = [
-  "Legal",
-  "Commercial", 
-  "Financial",
-  "HR",
-  "IP",
-  "IT",
-]
+// Get all subfolders (folders that have a parentId) - files should only go to subfolders
+const getSubfolders = (): Folder[] => {
+  return mockFolders.filter(folder => folder.parentId)
+}
 
-const folderIdMap: Record<string, string> = {
-  "Legal": "legal",
-  "Commercial": "commercial", 
-  "Financial": "financial",
-  "HR": "hr",
-  "IP": "ip",
-  "IT": "it",
+// Helper to get folder display name with parent context
+const getFolderDisplayName = (folder: Folder): string => {
+  const parentFolder = mockFolders.find(f => f.id === folder.parentId)
+  return parentFolder ? `${parentFolder.name} / ${folder.name}` : folder.name
 }
 
 const getAISuggestion = (fileName: string) => {
   const name = fileName.toLowerCase()
+  const subfolders = getSubfolders()
 
+  // Financial documents
   if (name.includes("financial") || name.includes("balance") || name.includes("income") || name.includes("cash") || name.includes("revenue") || name.includes("audit")) {
-    return { folder: "Financial", confidence: 95, reason: "Contains financial keywords" }
+    if (name.includes("accounting") || name.includes("statement") || name.includes("audit")) {
+      return { folder: "financial-accounting", confidence: 95, reason: "Financial accounting document" }
+    }
+    if (name.includes("operation") || name.includes("budget")) {
+      return { folder: "financial-operations", confidence: 90, reason: "Financial operations document" }
+    }
+    return { folder: "financial-finance", confidence: 85, reason: "General financial document" }
   }
+  
+  // Legal documents
   if (name.includes("legal") || name.includes("compliance") || name.includes("regulation") || name.includes("law") || name.includes("litigation")) {
-    return { folder: "Legal", confidence: 88, reason: "Legal terminology detected" }
+    if (name.includes("corporate") || name.includes("incorporation") || name.includes("bylaw")) {
+      return { folder: "legal-corp", confidence: 95, reason: "Corporate legal document" }
+    }
+    if (name.includes("management") || name.includes("board") || name.includes("resolution")) {
+      return { folder: "legal-mgmt", confidence: 90, reason: "Management/board document" }
+    }
+    return { folder: "legal-legal", confidence: 80, reason: "General legal document" }
   }
+  
+  // IP documents
   if (name.includes("patent") || name.includes("trademark") || name.includes("ip") || name.includes("intellectual") || name.includes("copyright")) {
-    return { folder: "IP", confidence: 92, reason: "Intellectual property content" }
+    if (name.includes("registration") || name.includes("patent") || name.includes("trademark")) {
+      return { folder: "ip-registrations", confidence: 95, reason: "IP registration document" }
+    }
+    if (name.includes("contract") || name.includes("license")) {
+      return { folder: "ip-contracts", confidence: 90, reason: "IP contract document" }
+    }
+    return { folder: "ip-development", confidence: 80, reason: "IP development document" }
   }
+  
+  // HR documents
   if (name.includes("employee") || name.includes("hr") || name.includes("payroll") || name.includes("benefits") || name.includes("personnel")) {
-    return { folder: "HR", confidence: 87, reason: "Human resources related" }
+    if (name.includes("policy") || name.includes("handbook")) {
+      return { folder: "hr-policies", confidence: 90, reason: "HR policy document" }
+    }
+    if (name.includes("benefit") || name.includes("insurance")) {
+      return { folder: "hr-benefits", confidence: 90, reason: "Benefits document" }
+    }
+    return { folder: "hr-general", confidence: 80, reason: "General HR document" }
   }
+  
+  // IT documents
   if (name.includes("security") || name.includes("it") || name.includes("tech") || name.includes("system") || name.includes("software")) {
-    return { folder: "IT", confidence: 85, reason: "Technology/IT content" }
+    if (name.includes("security") || name.includes("cyber")) {
+      return { folder: "it-security", confidence: 90, reason: "IT security document" }
+    }
+    return { folder: "it-administration", confidence: 80, reason: "IT administration document" }
   }
+  
+  // Commercial documents
   if (name.includes("contract") || name.includes("agreement") || name.includes("terms") || name.includes("commercial") || name.includes("sales") || name.includes("purchase")) {
-    return { folder: "Commercial", confidence: 90, reason: "Commercial/contract document" }
+    if (name.includes("customer") || name.includes("client")) {
+      return { folder: "commercial-customers", confidence: 90, reason: "Customer-related document" }
+    }
+    if (name.includes("supplier") || name.includes("vendor")) {
+      return { folder: "commercial-suppliers", confidence: 90, reason: "Supplier-related document" }
+    }
+    if (name.includes("policy")) {
+      return { folder: "commercial-policies", confidence: 85, reason: "Commercial policy document" }
+    }
+    return { folder: "commercial-customers", confidence: 70, reason: "General commercial document" }
   }
 
-  return { folder: "Commercial", confidence: 70, reason: "General business document" }
+  // Default to a common subfolder
+  return { folder: "commercial-customers", confidence: 60, reason: "General business document" }
 }
 
 export function BulkUploadZone() {
@@ -90,6 +133,7 @@ export function BulkUploadZone() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const { currentUser, currentProject, addFileWithContent } = useAppStore()
+  const subfolders = getSubfolders()
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -199,7 +243,7 @@ export function BulkUploadZone() {
                         id: f.id,
                         name: f.name,
                         path: `/${f.folder}/${f.name}`,
-                        folderId: folderIdMap[f.folder] || f.folder.toLowerCase().replace(/\s+/g, "-"),
+                        folderId: f.folder,
                         size: f.size,
                         modified: new Date().toISOString(),
                         version: "1.0",
@@ -230,8 +274,8 @@ export function BulkUploadZone() {
         .map((file) => ({
           id: file.id,
           name: file.name,
-          folder: file.folder || "Commercial",
-          accessUsers: getFolderAccessUsers(file.folder || "Commercial"),
+          folder: file.folder || "commercial-customers",
+          accessUsers: getFolderAccessUsers(file.folder || "commercial-customers"),
         }))
       setFilePreviews(previews)
       setShowPreview(true)
@@ -259,12 +303,19 @@ export function BulkUploadZone() {
     }
   }
 
-  const getFolderAccessUsers = (folder: string): string[] => {
+  const getFolderAccessUsers = (folderId: string): string[] => {
+    const folder = mockFolders.find(f => f.id === folderId)
+    if (!folder) return ["John Smith (Seller Admin)"]
+    
+    // Get parent folder to determine access pattern
+    const parentFolder = mockFolders.find(f => f.id === folder.parentId)
+    const parentName = parentFolder?.name || folder.name
+    
     const folderAccess: Record<string, string[]> = {
       "Legal": ["John Smith (Seller Admin)", "Lisa Wang (Company Legal)", "David Brown (Buyer A)"],
       "Commercial": [
         "John Smith (Seller Admin)",
-        "Lisa Wang (Company Legal)",
+        "Lisa Wang (Company Legal)", 
         "Mike Johnson (Buyer A)",
         "Emma Davis (Buyer B)",
       ],
@@ -273,7 +324,7 @@ export function BulkUploadZone() {
       "IP": ["John Smith (Seller Admin)", "Lisa Wang (Company Legal)", "Tom Wilson (Buyer A)"],
       "IT": ["John Smith (Seller Admin)", "Chris Lee (Company IT)", "David Brown (Buyer A)"],
     }
-    return folderAccess[folder] || ["John Smith (Seller Admin)"]
+    return folderAccess[parentName] || ["John Smith (Seller Admin)"]
   }
 
   const confirmPlacement = () => {
@@ -330,11 +381,11 @@ export function BulkUploadZone() {
                     <SelectValue placeholder="Select default folder" />
                   </SelectTrigger>
                   <SelectContent>
-                    {folders.map((folder) => (
-                      <SelectItem key={folder} value={folder}>
+                    {subfolders.map((folder) => (
+                      <SelectItem key={folder.id} value={folder.id}>
                         <div className="flex items-center gap-2">
                           <Folder className="h-4 w-4" />
-                          {folder}
+                          {getFolderDisplayName(folder)}
                         </div>
                       </SelectItem>
                     ))}
@@ -429,11 +480,11 @@ export function BulkUploadZone() {
                           <SelectValue placeholder="Select folder" />
                         </SelectTrigger>
                         <SelectContent>
-                          {folders.map((folder) => (
-                            <SelectItem key={folder} value={folder}>
+                          {subfolders.map((folder) => (
+                            <SelectItem key={folder.id} value={folder.id}>
                               <div className="flex items-center gap-2">
                                 <Folder className="h-3 w-3" />
-                                {folder}
+                                {getFolderDisplayName(folder)}
                               </div>
                             </SelectItem>
                           ))}
@@ -502,7 +553,12 @@ export function BulkUploadZone() {
                     <div className="flex items-center gap-2">
                       <Folder className="h-4 w-4 text-primary" />
                       <span className="text-sm font-medium">Destination:</span>
-                      <Badge variant="secondary">{preview.folder}</Badge>
+                      <Badge variant="secondary">
+                        {(() => {
+                          const folder = mockFolders.find(f => f.id === preview.folder)
+                          return folder ? getFolderDisplayName(folder) : preview.folder
+                        })()}
+                      </Badge>
                     </div>
 
                     <div className="flex items-start gap-2">
