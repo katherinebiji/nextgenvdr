@@ -61,7 +61,7 @@ export default function ProjectsPage() {
   }
 
   const handleProjectClick = (projectId: string) => {
-    router.push(`/projects/${projectId}/documents`)
+    router.push(`/projects/${projectId}`)
   }
 
   return (
