@@ -79,6 +79,15 @@ def delete_document(db: Session, document_id: str, user_id: str) -> bool:
         return True
     return False
 
+def delete_document_as_seller(db: Session, document_id: str) -> bool:
+    """Delete any document (seller privilege)"""
+    document = db.query(models.Document).filter(models.Document.id == document_id).first()
+    if document:
+        db.delete(document)
+        db.commit()
+        return True
+    return False
+
 def update_document_summary(db: Session, document_id: str, summary: str) -> Optional[models.Document]:
     document = get_document(db, document_id)
     if document:

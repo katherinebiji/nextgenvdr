@@ -35,7 +35,6 @@ export default function DocumentsPage() {
     loadProjectFiles,
     downloadFile,
     deleteFile,
-    bulkDeleteFiles,
     purgeAllFiles,
   } = useAppStore()
 
@@ -46,7 +45,7 @@ export default function DocumentsPage() {
   // Load files from storage
   useEffect(() => {
     if (currentUser && currentProject) {
-      loadProjectFiles(currentUser.id, currentProject.id)
+      loadProjectFiles()
     }
   }, [params.projectId, currentUser, currentProject, loadProjectFiles])
 
@@ -104,9 +103,12 @@ export default function DocumentsPage() {
     handleAcceptRelevance(suggestion)
   }
 
-  const handleBulkDelete = (fileIds: string[]) => {
+  const handleBulkDelete = async (fileIds: string[]) => {
     if (!currentUser || !currentProject) return
-    bulkDeleteFiles(currentUser.id, currentProject.id, fileIds)
+    
+    // Delete files one by one since we don't have a bulk delete API
+    const deletePromises = fileIds.map(fileId => deleteFile(fileId))
+    await Promise.all(deletePromises)
   }
 
   const handlePurgeAllDocuments = () => {
@@ -224,8 +226,8 @@ export default function DocumentsPage() {
               selectedFileId={selectedFile}
               onFileSelect={setSelectedFile}
               onFileVisibilityChange={updateFileVisibility}
-              onFileDownload={(fileId) => currentUser && currentProject && downloadFile(currentUser.id, currentProject.id, fileId)}
-              onFileDelete={(fileId) => currentUser && currentProject && deleteFile(currentUser.id, currentProject.id, fileId)}
+              onFileDownload={downloadFile}
+              onFileDelete={deleteFile}
               onBulkDelete={handleBulkDelete}
               showBulkActions={showBulkActions}
             />

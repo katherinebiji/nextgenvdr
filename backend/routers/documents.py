@@ -118,10 +118,15 @@ def get_document(
 @router.delete("/{document_id}")
 def delete_document(
     document_id: str,
-    current_user: models.User = Depends(auth.get_current_seller),
+    current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    success = crud.delete_document(db, document_id, current_user.id)
+    # Sellers can delete any document, others can only delete their own
+    if current_user.role == "seller":
+        success = crud.delete_document_as_seller(db, document_id)
+    else:
+        success = crud.delete_document(db, document_id, current_user.id)
+    
     if not success:
         raise HTTPException(status_code=404, detail="Document not found or not authorized")
     return {"message": "Document deleted successfully"}
