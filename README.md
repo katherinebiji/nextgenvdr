@@ -30,7 +30,7 @@ NextGenVDR is a modern Virtual Data Room (VDR) platform that revolutionizes due 
 
 2. **Install dependencies with uv**
    ```bash
-   VIRTUAL_ENV=.venv uv pip install -r backend/pyproject.toml
+   uv pip install -r backend/requirements.txt
    ```
 
 3. **Set up environment variables**
@@ -41,8 +41,7 @@ NextGenVDR is a modern Virtual Data Room (VDR) platform that revolutionizes due 
 
 4. **Start the FastAPI backend server**
    ```bash
-   cd backend
-   ../.venv/bin/python start.py
+   .venv/bin/python backend/main.py
    ```
 
    The backend API will be available at `http://localhost:8000`

@@ -3,11 +3,18 @@ import json
 import os
 from typing import List, Dict, Any, Optional
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from pypdf import PdfReader
 import io
+import chromadb
+from chromadb.config import Settings
+from sqlalchemy.orm import Session
+from models.models import DocumentChunk, Document as DBDocument
+from database import get_db
+import uuid
+from datetime import datetime
 
 
 class DocumentProcessor:
@@ -16,7 +23,7 @@ class DocumentProcessor:
     def __init__(self):
         self.embeddings = OpenAIEmbeddings(
             api_key=os.getenv("OPENAI_API_KEY"),
-            model="text-embedding-3-small"
+            model="text-embedding-ada-002"  # Use ada-002 for 1536 dimensions to match existing collection
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
@@ -24,25 +31,49 @@ class DocumentProcessor:
             separators=["\n\n", "\n", ".", "!", "?", ",", " ", ""]
         )
         self.vector_store = None
-        self.vector_store_path = "backend/vector_store"
+        self.chroma_db_path = "backend/chroma_db"
+        self.collection_name = "vdr_documents"
         
-        # Load existing vector store if it exists
-        self._load_vector_store()
+        # Initialize ChromaDB
+        self._initialize_chroma_db()
     
-    def _load_vector_store(self):
-        """Load existing FAISS vector store if it exists."""
+    def _initialize_chroma_db(self):
+        """Initialize ChromaDB collection."""
         try:
-            if os.path.exists(self.vector_store_path):
-                self.vector_store = FAISS.load_local(
-                    self.vector_store_path, 
-                    self.embeddings,
-                    allow_dangerous_deserialization=True
+            os.makedirs(self.chroma_db_path, exist_ok=True)
+            
+            # Create ChromaDB client
+            self.chroma_client = chromadb.PersistentClient(
+                path=self.chroma_db_path,
+                settings=Settings(
+                    anonymized_telemetry=False,
+                    allow_reset=True
                 )
+            )
+            
+            # Get or create collection
+            try:
+                self.collection = self.chroma_client.get_collection(name=self.collection_name)
+            except:
+                self.collection = self.chroma_client.create_collection(
+                    name=self.collection_name,
+                    metadata={"description": "VDR document chunks for RAG"}
+                )
+            
+            # Initialize Langchain ChromaDB wrapper
+            self.vector_store = Chroma(
+                client=self.chroma_client,
+                collection_name=self.collection_name,
+                embedding_function=self.embeddings,
+                persist_directory=self.chroma_db_path
+            )
+            
         except Exception as e:
-            print(f"Could not load existing vector store: {e}")
+            print(f"Could not initialize ChromaDB: {e}")
             self.vector_store = None
+            self.collection = None
     
-    def process_document(self, document_content: str, document_name: str, document_id: str) -> Dict[str, Any]:
+    def process_document(self, document_content: str, document_name: str, document_id: str, db: Session = None) -> Dict[str, Any]:
         """
         Process a document by extracting text, chunking, and creating embeddings.
         
@@ -50,15 +81,27 @@ class DocumentProcessor:
             document_content: Base64 encoded document content
             document_name: Name of the document
             document_id: Unique identifier for the document
+            db: Database session for storing chunk metadata
             
         Returns:
             Dictionary with processing results
         """
         try:
+            # Update document status to processing
+            if db:
+                document = db.query(DBDocument).filter(DBDocument.id == document_id).first()
+                if document:
+                    document.processing_status = "processing"
+                    db.commit()
+            
             # Extract text from document
             text_content = self._extract_text_from_document(document_content, document_name)
             
             if not text_content or len(text_content.strip()) == 0:
+                # Update status to failed
+                if db and document:
+                    document.processing_status = "failed"
+                    db.commit()
                 return {
                     "success": False,
                     "error": "No text content could be extracted from document",
@@ -68,8 +111,16 @@ class DocumentProcessor:
             # Create document chunks
             chunks = self._create_chunks(text_content, document_name, document_id)
             
-            # Add chunks to vector store
-            self._add_chunks_to_vector_store(chunks)
+            # Add chunks to vector store and database
+            chunk_ids = self._add_chunks_to_vector_store(chunks)
+            if db:
+                self._save_chunks_to_database(chunks, chunk_ids, db)
+            
+            # Update document status to completed
+            if db and document:
+                document.processing_status = "completed"
+                document.processed_at = datetime.utcnow()
+                db.commit()
             
             return {
                 "success": True,
@@ -79,6 +130,13 @@ class DocumentProcessor:
             }
             
         except Exception as e:
+            # Update status to failed
+            if db:
+                document = db.query(DBDocument).filter(DBDocument.id == document_id).first()
+                if document:
+                    document.processing_status = "failed"
+                    db.commit()
+            
             return {
                 "success": False,
                 "error": f"Error processing document: {str(e)}",
@@ -144,13 +202,19 @@ class DocumentProcessor:
             raise Exception("Could not decode text file with any encoding")
     
     def _create_chunks(self, text_content: str, document_name: str, document_id: str) -> List[Document]:
-        """Split text into chunks and create LangChain Documents."""
+        """Split text into chunks and create LangChain Documents with position tracking."""
         # Split text into chunks
         text_chunks = self.text_splitter.split_text(text_content)
         
-        # Create Document objects with metadata
+        # Create Document objects with metadata including position tracking
         documents = []
+        current_position = 0
+        
         for i, chunk in enumerate(text_chunks):
+            # Find chunk position in original text for highlighting
+            chunk_start = text_content.find(chunk, current_position)
+            chunk_end = chunk_start + len(chunk) if chunk_start != -1 else current_position + len(chunk)
+            
             doc = Document(
                 page_content=chunk,
                 metadata={
@@ -158,28 +222,72 @@ class DocumentProcessor:
                     "document_name": document_name,
                     "chunk_index": i,
                     "total_chunks": len(text_chunks),
-                    "source": f"{document_name}_chunk_{i}"
+                    "source": f"{document_name}_chunk_{i}",
+                    "start_position": chunk_start,
+                    "end_position": chunk_end,
+                    "chunk_length": len(chunk)
                 }
             )
             documents.append(doc)
+            current_position = chunk_end
         
         return documents
     
-    def _add_chunks_to_vector_store(self, documents: List[Document]):
-        """Add document chunks to the vector store."""
+    def _add_chunks_to_vector_store(self, documents: List[Document]) -> List[str]:
+        """Add document chunks to the vector store and return chunk IDs."""
         if not documents:
-            return
+            return []
         
-        if self.vector_store is None:
-            # Create new vector store
-            self.vector_store = FAISS.from_documents(documents, self.embeddings)
-        else:
-            # Add to existing vector store
-            self.vector_store.add_documents(documents)
+        chunk_ids = []
         
-        # Save vector store to disk
-        os.makedirs(self.vector_store_path, exist_ok=True)
-        self.vector_store.save_local(self.vector_store_path)
+        try:
+            if self.vector_store is None:
+                # Create new vector store
+                self.vector_store = Chroma.from_documents(
+                    documents, 
+                    self.embeddings,
+                    persist_directory=self.chroma_db_path,
+                    collection_name=self.collection_name
+                )
+            else:
+                # Add to existing vector store
+                chunk_ids = self.vector_store.add_documents(documents)
+            
+            # If chunk_ids weren't returned, generate them
+            if not chunk_ids:
+                chunk_ids = [str(uuid.uuid4()) for _ in documents]
+            
+            # ChromaDB persists automatically, but we can explicitly persist
+            if hasattr(self.vector_store, 'persist'):
+                self.vector_store.persist()
+                
+            return chunk_ids
+            
+        except Exception as e:
+            print(f"Error adding chunks to vector store: {e}")
+            return []
+    
+    def _save_chunks_to_database(self, documents: List[Document], chunk_ids: List[str], db: Session):
+        """Save chunk metadata to database for position tracking."""
+        try:
+            for i, (doc, chunk_id) in enumerate(zip(documents, chunk_ids)):
+                chunk = DocumentChunk(
+                    id=chunk_id if chunk_id else str(uuid.uuid4()),
+                    document_id=doc.metadata["document_id"],
+                    chunk_index=doc.metadata["chunk_index"],
+                    content=doc.page_content,
+                    start_position=doc.metadata.get("start_position"),
+                    end_position=doc.metadata.get("end_position"),
+                    chunk_length=doc.metadata.get("chunk_length"),
+                    embedding_id=chunk_id
+                )
+                db.add(chunk)
+            
+            db.commit()
+            
+        except Exception as e:
+            print(f"Error saving chunks to database: {e}")
+            db.rollback()
     
     def search_similar_documents(self, query: str, k: int = 5, score_threshold: float = 0.7) -> List[Dict[str, Any]]:
         """
@@ -191,7 +299,7 @@ class DocumentProcessor:
             score_threshold: Minimum similarity score (0-1)
             
         Returns:
-            List of relevant document chunks with metadata
+            List of relevant document chunks with metadata including position data
         """
         if self.vector_store is None:
             return []
@@ -203,8 +311,9 @@ class DocumentProcessor:
             # Filter by score threshold and format results
             relevant_docs = []
             for doc, score in results:
-                # Convert distance to similarity score (lower distance = higher similarity)
-                similarity_score = 1 / (1 + score)
+                # ChromaDB uses L2 distance, convert to similarity score (higher is better)
+                # For L2 distance, smaller values mean more similar
+                similarity_score = 1 / (1 + score)  # Convert distance to similarity (0-1 range)
                 
                 if similarity_score >= score_threshold:
                     relevant_docs.append({
@@ -214,7 +323,10 @@ class DocumentProcessor:
                         "document_id": doc.metadata.get("document_id"),
                         "document_name": doc.metadata.get("document_name"),
                         "chunk_index": doc.metadata.get("chunk_index"),
-                        "source": doc.metadata.get("source")
+                        "source": doc.metadata.get("source"),
+                        "start_position": doc.metadata.get("start_position"),
+                        "end_position": doc.metadata.get("end_position"),
+                        "chunk_length": doc.metadata.get("chunk_length")
                     })
             
             return relevant_docs
@@ -225,23 +337,29 @@ class DocumentProcessor:
     
     def get_document_chunks(self, document_id: str) -> List[Dict[str, Any]]:
         """Get all chunks for a specific document."""
-        if self.vector_store is None:
+        if self.collection is None:
             return []
         
         try:
-            # Get all documents from the vector store
-            all_docs = self.vector_store.docstore._dict
+            # Query ChromaDB collection for specific document
+            results = self.collection.get(
+                where={"document_id": document_id},
+                include=["documents", "metadatas"]
+            )
             
-            # Filter by document_id
+            # Format results
             document_chunks = []
-            for doc_id, doc in all_docs.items():
-                if doc.metadata.get("document_id") == document_id:
-                    document_chunks.append({
-                        "content": doc.page_content,
-                        "metadata": doc.metadata,
-                        "chunk_index": doc.metadata.get("chunk_index"),
-                        "source": doc.metadata.get("source")
-                    })
+            for i in range(len(results["documents"])):
+                metadata = results["metadatas"][i]
+                document_chunks.append({
+                    "content": results["documents"][i],
+                    "metadata": metadata,
+                    "chunk_index": metadata.get("chunk_index"),
+                    "source": metadata.get("source"),
+                    "start_position": metadata.get("start_position"),
+                    "end_position": metadata.get("end_position"),
+                    "chunk_length": metadata.get("chunk_length")
+                })
             
             # Sort by chunk_index
             document_chunks.sort(key=lambda x: x.get("chunk_index", 0))
@@ -253,14 +371,15 @@ class DocumentProcessor:
     
     def remove_document(self, document_id: str) -> bool:
         """Remove all chunks for a specific document from the vector store."""
-        if self.vector_store is None:
+        if self.collection is None:
             return False
         
         try:
-            # This is a limitation of FAISS - it doesn't support easy deletion
-            # We would need to rebuild the entire vector store without the document
-            # For now, we'll mark this as a known limitation
-            print(f"Note: Document removal not fully implemented for FAISS. Document {document_id} chunks remain in vector store.")
+            # ChromaDB supports deletion by metadata filter
+            self.collection.delete(
+                where={"document_id": document_id}
+            )
+            print(f"Successfully removed document {document_id} from vector store.")
             return True
             
         except Exception as e:
@@ -269,7 +388,7 @@ class DocumentProcessor:
     
     def get_vector_store_stats(self) -> Dict[str, Any]:
         """Get statistics about the vector store."""
-        if self.vector_store is None:
+        if self.collection is None:
             return {
                 "total_chunks": 0,
                 "total_documents": 0,
@@ -277,17 +396,22 @@ class DocumentProcessor:
             }
         
         try:
-            all_docs = self.vector_store.docstore._dict
+            # Get collection info
+            collection_count = self.collection.count()
+            
+            # Get all metadata to count unique documents
+            all_data = self.collection.get(include=["metadatas"])
             document_ids = set()
             
-            for doc in all_docs.values():
-                document_ids.add(doc.metadata.get("document_id"))
+            for metadata in all_data["metadatas"]:
+                document_ids.add(metadata.get("document_id"))
             
             return {
-                "total_chunks": len(all_docs),
+                "total_chunks": collection_count,
                 "total_documents": len(document_ids),
                 "vector_store_exists": True,
-                "documents": list(document_ids)
+                "documents": list(document_ids),
+                "collection_name": self.collection_name
             }
             
         except Exception as e:
@@ -297,3 +421,13 @@ class DocumentProcessor:
                 "vector_store_exists": False,
                 "error": str(e)
             }
+    
+    def get_document_text(self, document_id: str) -> Optional[str]:
+        """Get the full text content of a document by reconstructing from chunks."""
+        chunks = self.get_document_chunks(document_id)
+        if not chunks:
+            return None
+        
+        # Sort chunks by index and concatenate
+        sorted_chunks = sorted(chunks, key=lambda x: x.get("chunk_index", 0))
+        return "\n".join([chunk["content"] for chunk in sorted_chunks])

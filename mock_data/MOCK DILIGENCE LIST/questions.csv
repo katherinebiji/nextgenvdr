@@ -1,0 +1,148 @@
+Title,Description,Category,Priority,Status,Tag
+Organizational Chart,"Please provide an organizational chart showing the corporate structure of the Target and all subsidiaries and affiliates.",Corporate Organization,High,Open,Legal
+Joint Ventures,"Please provide copies of all joint venture agreements, partnership agreements or agreements involving the sharing of profits or technology of the Target, or joint marketing, development or distribution efforts by the Target.",Corporate Organization,Low,Open,Legal
+Governing Documents,"Please provide the applicable governing documents for the Target and all subsidiaries and affiliates (e.g., Articles of Incorporation, Articles of Organization, Bylaws, Operating/LLC Agreement, Articles of Association, etc.).",Corporate Organization,High,Open,Legal
+Authorized Jurisdictions,Please provide a list of all jurisdictions in which the Target and its subsidiaries and affiliates are licensed to do business.,Corporate Organization,Low,Open,Legal
+Board Minutes,"Please provide minutes and/or resolutions for all meetings of the board and shareholders/members, as applicable.",Corporate Organization,High,Open,Legal
+Past Transactions,Please provide copies of any contracts relating to any material acquisitions and/or divestitures of equity and/or assets (including via merger) completed by the Target within the past 5 years.,Corporate Organization,High,Open,Legal
+Related Party Transactions,"Please provide a summary of all related party transactions entered into in the past 3 years, including the key terms thereof and review/approval procedures applicable thereto.",Management,Low,Open,Legal
+Management Bios,Please provide a professional biography for each member of the management team and any other key employees identified by Buyer.,Management,Low,Open,Legal
+Board Bios,Please provide professional biography for each member of the board.,Management,High,Open,Legal
+Capitalization Table,"For Target and each subsidiary and/or affiliate, please provide a capitalization table showing the number of shares outstanding and the number of shares owned by each shareholder.",Capital Structure,High,Open,Legal
+Equity Issuances,Please provide documentation evidencing each issuance of equity for the Target and each subisidiary and/or affiliate.,Capital Structure,High,Open,Legal
+Options and Convertible Instruments,"Please provide a summary of all oustanding options, warrants, covertible notes, and any other right entitling the holder to obtain equity in the Target or any subisidiary or affiliate.",Capital Structure,Low,Open,Legal
+Outstanding Debt,Please provide a copy of all outstanding debt instruments.,Capital Structure,High,Open,Legal
+Litigation,Please provide a summary of all material litigation.,Legal,High,Open,Legal
+Licenses and Permits,"Please provide a summary of all permits, licenses, and other authorizations that are required for the Target to conduct its business and copies thereof, including any required export control licenses.",Legal,High,Open,Legal
+Encumbrances,Please provide copies of all agreements or instruments that place restrictions or encumbrances on assets (including property) of the Target (including security agreements and judicial or administrative orders).,Legal,Low,Open,Legal
+Material Contracts - Termination,Please provide copies of all material contracts that are terminable upon a change of control or other corporate transaction.,Legal,High,Open,Legal
+Material Contracts - Restrictive Covenants,"Please provide copies of all contracts that restrict the Target's right to conduct its business (e.g., non-compete, non-solicitation, geographical restriction, pricing restrictions/most favored nation, etc.).",Legal,Low,Open,Legal
+Material Contracts - Continuing Obligations,"Please provide copies of all contracts under which the Target has any continuing obligations (e.g., covenants, indemnification, etc.).",Legal,High,Open,Legal
+Indemnification Agreements,Please provide copies of all indemnification agreements between the Target and any officers, directors or agents thereof.,Legal,Low,Open,Legal
+Compliance Program,"Please provide a summary of the Target's compliance program and copies of all policies, procedures and other documentation related thereto (e.g., code of conduct, anti-corruption, anti-trust, export control, etc.).",Legal,High,Open,Legal
+Bad Actor Confirmation,"Please confirm that neither the Target nor any of its diretors, officers, or signifcant shareholders is subject to any of the ""Bad Actor"" disqualifications described under Rule 506(d) of the Securities Act.",Legal,High,Open,Legal
+Export Control,Please confirm that the Target is not, and has not been, restricted from doing business under OFAC regulations or any other similar regulation.,Legal,Low,Open,Legal
+Sanctions,Please confirm whether the Target has any direct or indirect presence and/or other engagements (including sales of product or the provision of services) involving any country or person subject to any embargo or sanctions imposed by the U.S. government or any other applicable governmental authority.,Legal,High,Open,Legal
+Material Regulations,"Please provide a summary of all material regulations applicable to the Target and/or its business, including any anticipated changes thereto.",Legal,Low,Open,Legal
+Regulatory Correspondence,Please provide copies of any material correspondence with any regulatory agencies or authorities.,Legal,Low,Open,Legal
+Product Recalls,Please provide a summary of all product recalls conducted by the Target in the last 5 years.,Legal,High,Open,Legal
+Warranty Claims,Please provide a summary of all material warranty claims brought within the last 5 years.,Legal,Low,Open,Legal
+Property Summary,"Please provide a list of the address and description of each office, manufacturing, warehouse or other facility operated or maintained by the Target, including the amount of floor space, estimated remaining life and whether owned or leased.",Real Estate,High,Open,Legal
+Deeds,"Please provide copies of deeds with respect to all owned real estate, including copies of all related title papers, title insurance policies, appraisals and surveys.",Real Estate,Low,Open,Legal
+Leases,Please provide copies of all lease agreements.,Real Estate,High,Open,Legal
+Purchase and Sale Agreements,Please provide copies of all agreements related to the purchase and/or sale of real property consummated within the past five years.,Real Estate,Low,Open,Legal
+Customer List,"Please provide a list of the top 25 customers for each of the past 3 years, including revenue.",Customers,High,Open,Commercial
+Customer Terminations,"Please provide a list of all material customers that have ceased doing business with the Target in the past 12 months, including a description of the circumstances surrounding the termination of any such relationship.",Customers,Low,Open,Commercial
+Sales Channel List,"Please provide a list of all material sales channel partners for each of the past 3 years, including revenue (e.g., sales reps and/or distributors).",Customers,High,Open,Commercial
+Sales Data,"Please provide a breakdown of sales and gross profits by: Product Type; Geography; Sales Channel.",Customers,High,Open,Commercial
+Customer Contracts,Please provide copies of all material customer contracts.,Customers > Contracts,High,Open,Commercial
+Sales Channel Contracts,"Please provide copies of all contracts with material sales channel partners (e.g., sales reps and/or distributors).",Customers > Contracts,Low,Open,Commercial
+Commission Contracts,"To the extent not previously provided, please provide copies of all contracts pursuant to which any third party is entitled to commissions or other payments.",Customers > Contracts,Low,Open,Commercial
+Government Contracts,Please provide copies of all contracts with government customers.,Customers > Contracts,High,Open,Commercial
+Long Term Contracts,Please provide copies of all material contracts that have remaining terms longer than one year.,Customers > Contracts,Low,Open,Commercial
+Commercial Policies,"Please provide copies of policies and procedures related to credits, returns, warranty claims, etc.",Commercial Policies,High,Open,Commercial
+Pricing Policies,Please provide copies of policies and procedures related to pricing.,Commercial Policies,Low,Open,Commercial
+Strategic Plans,Please provide copies of any strategic plans prepared for the Target.,Marketing,High,Open,Commercial
+Marketing/Advertising Plans,Please provide copies of any marketing/advertising plans prepared for the Target.,Marketing,Low,Open,Commercial
+Product Pipeline,Please provide a summary of anticipated new products and/or product improvements.,Marketing,High,Open,Commercial
+Advertising Materials,"Please provide copies of all brochures, presentations, sales sheet, and other advertising and/or marketing materials.",Marketing,Low,Open,Commercial
+Product Descriptions,Please provide product descriptions for all material products and product lines.,Marketing,High,Open,Commercial
+R&D Summary,"Please provide a summary of all ongoing R&D projects, including an estimated timeline for completion thereof.",Marketing,Low,Open,Commercial
+Marketing Assessment,Please provide a summary of all marketing risks and opportunities identified by the Target.,Marketing,High,Open,Commercial
+Supplier List,"Please provide a list of the top 15 suppliers for each of the past 3 years, including spend.",Suppliers,Low,Open,Commercial
+Supplier Contracts,Please provide copies of all material supplier contracts.,Suppliers > Contracts,High,Open,Commercial
+Subcontractor Contracts,Please provide copies of all material subcontractor contracts.,Suppliers > Contracts,Low,Open,Commercial
+Supplier Onboarding Process,Please provide a summary of the policies and procedures utilized when evaluating and onboarding any new supplier or subcontractor and all documentation related thereto.,Suppliers,High,Open,Commercial
+Financial Statements - Audited,Please provide copies of audited financial statements for the Target and each subsidiary and affiliates from 2019-2023.,Accounting,High,Open,Financial
+Financial Statements - Unaudited,Please provide copies of unaudited financial statements for the Target and each subsidiary and affiliates for the applicable current fiscal year period(s).,Accounting,Low,Open,Financial
+Off-Balance Sheet Transactions,"Please provide a detailed description of any off-balance sheet/statement of financial position items, liabilities or obligations of any nature (fixed or contingent) that are not shown or otherwise provided for in the Target's current financial statements.",Accounting,High,Open,Financial
+Contingent Liabilities,Please provide a schedule and description of any contingent liabilities not disclosed or referred to in the financial statements.,Accounting,High,Open,Financial
+Prepaid Expenses,Please provide a detailed schedule of the components of all prepaid expenses and deposits.,Accounting,Low,Open,Financial
+Audit Letters,"Please provide copies of any letters issued by the Target's auditors during the last 5 years regarding the Target's accounting controls, method of accounting and other procedures, including all Management Representation Letters.",Accounting,Low,Open,Financial
+Accounting Policies,"If the financial statements provided were not prepared in accordance with GAAP, please provide a summary of all key accounting policies necessary to the understanding of the financial statements.",Accounting,High,Open,Financial
+Changes to Accounting Policies,Please provide a summary of all material changes to accounting policies adopted by the Target in the past 5 years and the reasons such changes were undertaken.,Accounting,Low,Open,Financial
+Budgets,Please provide copies of all budgets and operating plans prepared for the Target for at least the next 12 months.,Accounting,High,Open,Financial
+Projections,Please provide copies of all financial projections prepared for the Target for at least the next 12 months.,Accounting,High,Open,Financial
+Cash Management,Please provide a summary of any cash management controls and practices adopted by the Target.,Finance,Low,Open,Financial
+Investmet Policies,Please provide a summary of the Target's investment policies.,Finance,Low,Open,Financial
+Hedging,"Please provide a summary of the Target's hedging policies, including copies of all contracts or instruments related thereto.",Finance,High,Open,Financial
+Accounts Receivable - Aging,Please provide a report reflecting all aged accounts receivable trial balances for Target.,Finance,Low,Open,Financial
+Inventory,"Please provide a summary of the Target's inventory costing system and other procedures and policies related to inventory (e.g., counts, valuation, turnover, obsolescence, etc.).",Finance,High,Open,Financial
+Bad Debts,Please provide a detailed description of any bad debts and any agreements or arrangements that are expected to result in a loss to the Target.,Finance,High,Open,Financial
+Reserves,Please provide a schedule and detailed description of any reserves/contingency funds established for specific risk situations.,Finance,Low,Open,Financial
+Credit Support Obligations,"Please provide a current listing of standby letters of credit, performance bonds, performance guarantees and similar credit support obligations.",Finance,Low,Open,Financial
+Bank Statements,Please provide copies of recent bank reconciliations and bank statements for all material bank accounts.,Finance,High,Open,Financial
+Capital Expenditures - Past,"Please provide a summary of all material capital expenditure projects completed in the last 3 years, including any contracts or other documnentation related thereto.",Operations,Low,Open,Financial
+Capital Expenditures - Planned,Please provide a summary of all capital expenditures planned in the next 12 months.,Operations,High,Open,Financial
+Fixed Assets,Please provide a current fixed asset register and/or copy of latest physical inventory of all equipment and other assets.,Operations,High,Open,Financial
+Equipment,Please provide a schedule of equipment split by capital vs. operating lease and provide copies of all lease agreements related thereto.,Operations,Low,Open,Financial
+Insurance Policies,Please provide a summary of all current insurance coverages and copies of all policy documents related thereto.,Insurance,High,Open,Financial
+Insurance Claims Summary,Please provide a summary of all claims made against any insurance policy within the last 5 years.,Insurance,Low,Open,Financial
+Employment Agreements,"Please provide copies of all employment agreements and indicate those affected by the transaction (e.g., severance payments, termination, etc.).",HR Agreements,High,Open,HR
+Consulting Agreements,Please provide copies of all consulting agreements.,HR Agreements,Low,Open,HR
+Compensation Arrangements,"To the extent not already provided, please provide copies of all agreements relating to any compensation arrangements between the Target and any third party.",HR Agreements,High,Open,HR
+Collective Bargaining Agreements,Please provide copies of all collective bargaining agreements.,HR Agreements,High,Open,HR
+Confidentiality and IP Agreements,"Please provide copies of all confidentiality, non-competition, nondisclosure, non-solicitation, intellectual property, or similar agreements.",HR Agreements,Low,Open,HR
+Severance Agreements,Please provide copies of any severance agreements under which the Target has or may have outstanding liabilities whether as a result of the proposed transaction or otherwise.,HR Agreements,High,Open,HR
+Recruiting Arrangements,"Please provide a summary of any current recruitment initiatives, including any financial commitments related thereto (e.g., payments due to recruitment agents in the instance that a candidate is successfully placed with the Target).",HR Agreements,Low,Open,HR
+Benefits Summary,Please provide a summary of all benefits.,Benefits,Low,Open,HR
+Benefit Plans,"Please provide copies of plan documents for all benefit plans, including copies of all Form 5500 or other applicable regulatory filings for the past 5 years.",Benefits,High,Open,HR
+Compensation Policy,Please provide a copy of the Target's compensation policy.,Benefits,High,Open,HR
+Bonus Plans,Please provide details of bonus or other profit-related schemes and details of beneficiaries/participants.,Benefits,Low,Open,HR
+Stock Option Plans,Please provide a summary of all incentive stock option plans and copies of any plan documents related thereto.,Benefits,High,Open,HR
+Stock Option Awards,Please provide a summary of all outstanding stock option awards and copies of any award documents related thereto.,Benefits,Low,Open,HR
+Pension Plans,Provide a list and detailed summary of all pension pension plans.,Benefits,High,Open,HR
+Employee Litigation,"Please provide a summary of all litigation against the Target brought by any current or former employee in the last ten 10 years (e.g., discrimination, etc.).",General HR,High,Open,HR
+Judgements and Awards,Please provide a description of any court judgement or current employment tribunal award in respect of any employee dispute within the past 12 months.,General HR,Low,Open,HR
+Disciplinary Proceedings,"Please provide details of any disciplinary proceedings taken against an employee or grievance brought by an employee in the past 3 years, whether brought under the Target's disciplinary or grievance procedure or otherwise.",General HR,Low,Open,HR
+Investigations,"Please provide a summary of any investigations and proceedings by authorities relating to employment matters, including the results thereof (e.g., administrative decrees, judgments, decisions, opinions or settlement agreements issued or entered into either for or against the Target).",General HR,High,Open,HR
+Headcount,Please provide a headcount by function and location.,General HR,Low,Open,HR
+Suspended Employees,Please provide a schedule of any employees suspended – including reasons for suspension and salary implications.,General HR,High,Open,HR
+Dismissed Employees,Please provide a schedule of employees dismissed in the last 12 months (including details of why) and any potential constructive dismissals.,General HR,Low,Open,HR
+Absentee Reports,"Please provide a schedule of all employees absent from work due to disability, long-term illness, or otherwise.",General HR,Low,Open,HR
+Disabled Employees,Please provide a schedule of employees covered by any disability legislation applicable in the jurisdiction in which the Target operates.,General HR,High,Open,HR
+Employee Policies,Please provide copies of all employee handbooks and other employee policies.,HR Policies,High,Open,HR
+Hiring Policies,"Please provide a detailed summary of the Target's hiring practices and policies, including use of background checks, verification of immigration status, and any other applicable policies.",HR Policies,Low,Open,HR
+Changes to Employee Policies,"Please provide a summary of any changes that have been agreed within the past 12 months or that are contemplated in relation to terms and conditions, handbooks, policies, benefits and redundancy arrangements and the date that any such changes will come into force.",HR Policies,High,Open,HR
+Employee Loans,Please provide a detailed schedule of any loans granted to employees (terms/conditions/tax implications) and all sums owed.,HR Policies,Low,Open,HR
+Patents and Trademarks,Please provide a summary of all patents and registered trademarks held by the Target.,IP Registrations,High,Open,IP
+Domain Names,Please provide a schedule of all websites and domains owned or run by the Target and any terms and conditions related thereto.,IP Registrations,Low,Open,IP
+Licensing Agreements - Incoming,Please provide copies of all agreements under which the Target is granted the right to use IP owned by a third party.,IP Contracts,High,Open,IP
+Licensing Agreements - Outgoing,Please provide copies of all agreements under which a third party is granted the right to use IP owned by the Target.,IP Contracts,Low,Open,IP
+Jointly-Owned IP,"Please provide a summary of any IP that is not solely owned by the Target (e.g., joint ownership, non-exclusive license, etc.), including any contracts or other documentation related thereto.",IP Contracts,High,Open,IP
+Infringement,Please provide a summary of any past or current instances where any third party actually or allegedly infringed on the Target's IP or where the Target actually or allegedly infringed on a third party's IP.,IP Litigation,High,Open,IP
+IP Restrictions,Please provide a detailed summary of any restrictions to which IP assets of the Target are subject.,IP Litigation,Low,Open,IP
+IP Litigation,"Please provide a summary of all IP litigation in which the Target is or has been involved, including the current status or outcome thereof (e.g., court orders, settlements, etc.).",IP Litigation,High,Open,IP
+IP Development,"Please provide a summary of the Target's process for generating/developing, recognizing, capturing, and protecting (for instance, via patents) IP assets.",IP Development,Low,Open,IP
+IT Projects,"Please provide details of any current and planned IT initiatives/key projects - including details of key benefits to be realized, capital budget, total budget, time and cost incurred to date and estimated time and cost to completion.",IT Administration,High,Open,IT
+Key IT Resources,"Please provide a summary of all key IT resources (hardware/software/people) and the extent to which the Target depends on any such resources.",IT Administration,Low,Open,IT
+Software,"Please provide a summary of the Target's policies and practices regarding the purchase and maintenance of software (e.g. (i) how often is software purchased (ii) who makes the purchase (iii) is software renewed and renegotiated on an annual basis).",IT Administration,High,Open,IT
+Material Software,Please provide a summary of all material software utilized by the Target.,IT Administration,Low,Open,IT
+Hardware,"Please provide a summary of the Target's policies and practices regarding the purchase and maintenance of IT hardware (e.g. (i) how often is hardware purchased and (ii) who makes the purchase).",IT Administration,High,Open,IT
+Material Hardware,"Please provide a summary of all material hardware utilized by the Target, including the physical location thereof.",IT Administration,High,Open,IT
+Technical Architecture,"Please provide a diagram of the Target's technical architecture including servers, storage devices, operating systems and databases.",IT Administration,Low,Open,IT
+System Networks,"Please provide a detailed description of the networking systems utilized by the Target, including a depiction of topology, inventory, connectivity, bandwith, instances of downtime in the past 12 months, etc.",IT Administration,High,Open,IT
+Hardware Configurations,Please provide a summary of an specific hardware configurations utilized by the Target.,IT Administration,Low,Open,IT
+IT Support Services,"Please provide a summary of any vendor support or other support services to which the Target is entitled or that the Target utilizes, including any contracts or other documentation related thereto.",IT Administration,Low,Open,IT
+IT Maintenance,"Please provide a summary of annual costs associated with maintenance of IT hardware for the past 3 years, including details related to the replacement and/or upgrade of such hardware.",IT Administration,High,Open,IT
+IT Contracts,Please provide copies of all material contracts related to software and/or IT services obtained by the Company.,IT Administration,High,Open,IT
+IT Services,Please provide a summary of services provided by all external IT contractors/consultants and copies of all contracts related thereto.,IT Administration,Low,Open,IT
+Growth,Describe the capacity for growth in the Target's current IT environment. If IT is being fully utilized to what extent is investment required to support intended future growth?,IT Administration,High,Open,IT
+IT Acquisition,"Please provide a summary of how technology acquired by the Target, including sourcing methods and delegation of responsibility therefor.",IT Administration,Low,Open,IT
+Help Desk,"Please provide a summary of the Target's support/help desk effectiveness and approach (e.g., in-house or out-sourced).",IT Administration,Low,Open,IT
+IT Strategy,Provide a summary of the role of technology/IT in the Target's strategic plan.,IT Administration,High,Open,IT
+Automation,Describe the level of automation made possible via the Target's IT systems (software & hardware) and the sufficiency of such capabilities given the Target's business.,IT Administration,High,Open,IT
+Web-based Applications,Please provide a description of any web-based or internet facing applications hosted by the Target.,IT Administration,Low,Open,IT
+Security Protocols,Please provide a detailed description of the key security protocols adopted by the Target.,IT Security,High,Open,IT
+Disaster Recovery,"Please provide a detailed description of the Target's policies and procedures related to backups and/or disaster recovery, including all documentation related thereto.",IT Security,High,Open,IT
+Data Privacy,"Please provide a detailed description of the Target's data privacy policies and procedures, including all documentation related thereto.",IT Security,Low,Open,IT
+Sensitive Information,"Please provide a summary of all personal and/or sensitive information held and/or processed by the Target, including information about users that have access to such information and policies and procedures regarding protection thereof.",IT Security,High,Open,IT
+Stress Test Results,"Please provide the results of any stress test analysis undertaken by the Target, including the resolution of any issues identified.",IT Security,Low,Open,IT
+Other IT Security Testing,Please provide a summary of all monitoring measures/tests conducted by the Target to ensure IT security systems are working as expected.,IT Security,Low,Open,IT
+Summary of Security Issues,"Please provide a detailed summary of any logged security issues, including all actions taken to remedy such issues.",IT Security,High,Open,IT
+Data Storage,"Please provide a detailed summary of the Target's policies and procedures regarding data storage (e.g., devices utilized, use of cloud storage, security measures, capacity, etc.).",IT Security,High,Open,IT
+Data Encryption,Please provide a summary of the Target's policies and practices regarding data encryption.,IT Security,Low,Open,IT
+E-mail Vulnerabilities,"Please provide a summary of any issues or concerns related to the Target's use of e-mail, including loss of confidential information, inappropriate or malicious content, etc.",IT Security,Low,Open,IT
+Anti-Virus Protection,Please provide a summary of any anti-virus and/or anti-malware protections utilized by the Target.,IT Security,High,Open,IT
+Attacks/Intrusions,Please provide a detailed description of any cyber attacks/intrusions that the Target has been subjected to in the past 12 months.,IT Security,High,Open,IT
+Mobile Device Security,Please provide a summary of all policies and procedures utilized by the Target to manage the security of mobile devices.,IT Security,Low,Open,IT
