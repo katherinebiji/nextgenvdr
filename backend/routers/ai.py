@@ -1,16 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict, Any
 import json
 
 from database import get_db
 from models import schemas, models
 from services.openai_service import OpenAIService
+from services.agentic_rag import AgenticRAGService
+from services.document_processor import DocumentProcessor
 import crud
 import auth
 
 router = APIRouter()
 openai_service = OpenAIService()
+rag_service = AgenticRAGService()
+doc_processor = DocumentProcessor()
 
 @router.post("/analyze-document", response_model=schemas.AIAnalysisResponse)
 def analyze_document(
@@ -131,3 +135,219 @@ def extract_tags(
     
     tags = openai_service.extract_tags(document.content, document.name)
     return tags
+
+# === RAG-POWERED ENDPOINTS ===
+
+@router.post("/process-document-for-rag")
+def process_document_for_rag(
+    request: schemas.AIAnalysisRequest,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Process a document for RAG by creating embeddings and storing in vector database."""
+    document = crud.get_document(db, request.document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Process document for RAG
+    result = doc_processor.process_document(
+        document_content=document.content,
+        document_name=document.name,
+        document_id=document.id
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result.get("error", "Failed to process document"))
+    
+    return {
+        "message": "Document processed successfully for RAG",
+        "chunks_created": result["chunks_created"],
+        "document_id": document.id,
+        "document_name": document.name,
+        "total_characters": result.get("total_characters", 0)
+    }
+
+@router.post("/rag-answer-question")
+def rag_answer_question(
+    request: Dict[str, Any],
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Answer a predefined question using agentic RAG."""
+    question_id = request.get("question_id")
+    if not question_id:
+        raise HTTPException(status_code=400, detail="question_id is required")
+        
+    question = crud.get_question(db, question_id)
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    
+    # Prepare question data
+    question_data = {
+        "title": question.title,
+        "content": question.content,
+        "priority": question.priority
+    }
+    
+    # Use agentic RAG to answer
+    result = rag_service.answer_predefined_question(question_data)
+    
+    return {
+        "question_id": question_id,
+        "suggested_answer": result["suggested_answer"],
+        "confidence": result["confidence"],
+        "sources": result["sources"],
+        "agent_used_retrieval": result["agent_used_retrieval"],
+        "success": result["success"]
+    }
+
+@router.post("/rag-chat")
+def rag_chat(
+    request: Dict[str, Any],
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Interactive chat with RAG-powered responses."""
+    message = request.get("message", "")
+    chat_history = request.get("chat_history", [])
+    
+    if not message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    
+    # Use agentic RAG for chat
+    result = rag_service.chat_with_documents(
+        message=message,
+        chat_history=chat_history
+    )
+    
+    return {
+        "response": result["response"],
+        "used_documents": result["used_documents"],
+        "sources": result["sources"],
+        "success": result["success"],
+        "message_type": result["message_type"]
+    }
+
+@router.post("/rag-answer-with-documents")
+def rag_answer_with_documents(
+    question_id: str,
+    document_ids: List[str],
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Answer a question using RAG with focus on specific documents."""
+    question = crud.get_question(db, question_id)
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    
+    # Verify documents exist
+    valid_doc_ids = []
+    for doc_id in document_ids:
+        if crud.get_document(db, doc_id):
+            valid_doc_ids.append(doc_id)
+    
+    if not valid_doc_ids:
+        raise HTTPException(status_code=400, detail="No valid documents found")
+    
+    # Prepare question data
+    question_data = {
+        "title": question.title,
+        "content": question.content,
+        "priority": question.priority
+    }
+    
+    # Use agentic RAG with specific documents
+    result = rag_service.answer_predefined_question(
+        question_data=question_data,
+        relevant_document_ids=valid_doc_ids
+    )
+    
+    return {
+        "question_id": question_id,
+        "document_ids_used": valid_doc_ids,
+        "suggested_answer": result["suggested_answer"],
+        "confidence": result["confidence"],
+        "sources": result["sources"],
+        "agent_used_retrieval": result["agent_used_retrieval"],
+        "success": result["success"]
+    }
+
+@router.get("/rag-search")
+def rag_search(
+    query: str,
+    k: int = 5,
+    score_threshold: float = 0.7,
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Search documents using RAG vector similarity."""
+    if not query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
+    
+    results = doc_processor.search_similar_documents(
+        query=query,
+        k=k,
+        score_threshold=score_threshold
+    )
+    
+    return {
+        "query": query,
+        "results": results,
+        "total_found": len(results)
+    }
+
+@router.get("/rag-status")
+def rag_status(current_user: models.User = Depends(auth.get_current_user)):
+    """Get status of the RAG system."""
+    return rag_service.get_system_status()
+
+@router.post("/bulk-process-documents-for-rag")
+def bulk_process_documents_for_rag(
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Process all documents in the database for RAG."""
+    documents = crud.get_documents(db, limit=1000)  # Get all documents
+    
+    results = []
+    successful = 0
+    failed = 0
+    
+    for document in documents:
+        try:
+            result = doc_processor.process_document(
+                document_content=document.content,
+                document_name=document.name,
+                document_id=document.id
+            )
+            
+            if result["success"]:
+                successful += 1
+                results.append({
+                    "document_id": document.id,
+                    "document_name": document.name,
+                    "status": "success",
+                    "chunks_created": result["chunks_created"]
+                })
+            else:
+                failed += 1
+                results.append({
+                    "document_id": document.id,
+                    "document_name": document.name,
+                    "status": "failed",
+                    "error": result.get("error", "Unknown error")
+                })
+                
+        except Exception as e:
+            failed += 1
+            results.append({
+                "document_id": document.id,
+                "document_name": document.name,
+                "status": "failed",
+                "error": str(e)
+            })
+    
+    return {
+        "total_processed": len(documents),
+        "successful": successful,
+        "failed": failed,
+        "results": results
+    }
