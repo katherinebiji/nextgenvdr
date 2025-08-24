@@ -17,9 +17,9 @@ import {
 import { cn } from "@/lib/utils"
 
 const sellSideNavigation = [
+  { name: "Q&A Tracking", href: "/qa-tracking", icon: MessageSquare },
   { name: "Upload Bulk Files", href: "/upload-bulk", icon: Upload },
   { name: "Documents", href: "/documents", icon: FileText },
-  { name: "Q&A Tracking", href: "/qa-tracking", icon: MessageSquare },
   { name: "Users", href: "/users", icon: Users },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
@@ -27,8 +27,8 @@ const sellSideNavigation = [
 
 const buySideNavigation = [
   { name: "Upload Questions", href: "/upload-questions", icon: HelpCircle },
-  { name: "Documents", href: "/documents", icon: FileText },
   { name: "Q&A Tracking", href: "/qa-tracking", icon: MessageSquare },
+  { name: "Documents", href: "/documents", icon: FileText },
   { name: "Users", href: "/users", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },
 ]
