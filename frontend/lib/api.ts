@@ -147,6 +147,10 @@ class ApiService {
     })
   }
 
+  async getDocumentPreview(documentId: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/documents/${documentId}/preview`)
+  }
+
   // Questions
   async createQuestion(question: {
     title: string

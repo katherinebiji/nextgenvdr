@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Document Preview</title>
+</head>
+<body>
+    <h1>Document Preview Test</h1>
+    <button onclick="testPreview()">Test Document Preview</button>
+    <div id="result"></div>
+
+    <script>
+        async function testPreview() {
+            const documentId = "9ca24347-c29a-441e-bcc2-ade465828e2d"; // test_company_info.txt ID
+            
+            try {
+                // Login first
+                const loginResponse = await fetch('http://localhost:8000/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'buyer@test.com',
+                        password: 'test123',
+                        name: 'Test Buyer',
+                        role: 'buyer'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                const token = loginData.access_token;
+                
+                // Test preview endpoint
+                const previewResponse = await fetch(`http://localhost:8000/documents/${documentId}/preview`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (previewResponse.ok) {
+                    const previewData = await previewResponse.json();
+                    document.getElementById('result').innerHTML = `
+                        <h2>✅ Success!</h2>
+                        <p><strong>Document:</strong> ${previewData.document_name}</p>
+                        <p><strong>Type:</strong> ${previewData.document_type}</p>
+                        <p><strong>Status:</strong> ${previewData.processing_status}</p>
+                        <p><strong>Text Content:</strong></p>
+                        <pre>${previewData.text_content}</pre>
+                        <p><strong>Chunks:</strong> ${previewData.chunks.length}</p>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `❌ Error: ${previewResponse.status}`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `❌ Error: ${error}`;
+            }
+        }
+    </script>
+</body>
+</html>

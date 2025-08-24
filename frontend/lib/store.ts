@@ -329,8 +329,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   getDocumentPreview: async (documentId) => {
     try {
-      const response = await fetch(`/api/documents/${documentId}/preview`)
-      return await response.json()
+      const response = await apiService.getDocumentPreview(documentId)
+      if (response.success) {
+        return response.data
+      }
+      return null
     } catch (error) {
       console.error("Failed to get document preview:", error)
       return null
