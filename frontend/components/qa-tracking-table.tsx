@@ -10,31 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MessageSquare, Search, Filter, ArrowUpDown, ExternalLink, WrapText, Edit } from "lucide-react"
+import { MessageSquare, Search, Filter, ArrowUpDown, ExternalLink, WrapText, Edit, FileText } from "lucide-react"
 import { QAProgressBar } from "@/components/qa-progress-bar"
+import { AnswerCollapsible } from "@/components/answer-collapsible"
 import { cn } from "@/lib/utils"
+import type { QATrackingItem } from "@/lib/store"
 
-interface QATrackingItem {
-  id: string
-  question: string
-  buyerId: string
-  status: "Complete" | "In Progress" | "Open"
-  team: string
-  category: string
-  subcategory: string
-  priority: "High" | "Medium" | "Low"
-  dueDate: string
-  reviewedByBank: "Yes" | "In Progress" | "Not Started"
-  description: string
-  linkedFiles: string[]
-  submittedDate: string
-  history: Array<{
-    date: string
-    action: string
-    user: string
-    note: string
-  }>
-}
 
 interface QATrackingTableProps {
   items: QATrackingItem[]
@@ -42,6 +23,9 @@ interface QATrackingTableProps {
   selectedItemId?: string | null
   isBuySide?: boolean
   onPriorityChange?: (itemId: string, newPriority: "High" | "Medium" | "Low") => void
+  onGenerateAnswer?: (questionId: string) => Promise<void>
+  onViewDocument?: (documentId: string, highlights?: any[]) => void
+  generatingAnswers?: Set<string>
 }
 
 export function QATrackingTable({
@@ -50,6 +34,9 @@ export function QATrackingTable({
   selectedItemId,
   isBuySide = false,
   onPriorityChange,
+  onGenerateAnswer,
+  onViewDocument,
+  generatingAnswers = new Set(),
 }: QATrackingTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("All")
@@ -61,6 +48,7 @@ export function QATrackingTable({
   const [questionColumnWidth, setQuestionColumnWidth] = useState(300)
   const [isResizing, setIsResizing] = useState(false)
   const [editingPriority, setEditingPriority] = useState<string | null>(null)
+  const [expandedAnswers, setExpandedAnswers] = useState<Set<string>>(new Set())
   const resizeRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -127,11 +115,11 @@ export function QATrackingTable({
   const getStatusBadge = (status: QATrackingItem["status"]) => {
     switch (status) {
       case "Complete":
-        return <Badge className="bg-secondary text-secondary-foreground">Complete</Badge>
+        return <Badge className="bg-purple-700 text-white">Complete</Badge>
       case "In Progress":
-        return <Badge className="bg-primary text-primary-foreground">In Progress</Badge>
+        return <Badge className="bg-purple-400 text-white">In Progress</Badge>
       case "Open":
-        return <Badge variant="outline">Open</Badge>
+        return <Badge className="bg-gray-300 text-gray-700 border border-gray-400">Open</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -179,11 +167,11 @@ export function QATrackingTable({
     const badgeContent = (() => {
       switch (priority) {
         case "High":
-          return <Badge variant="destructive">High</Badge>
+          return <Badge className="bg-purple-700 text-white">High</Badge>
         case "Medium":
-          return <Badge className="bg-primary text-primary-foreground">Medium</Badge>
+          return <Badge className="bg-purple-400 text-white">Medium</Badge>
         case "Low":
-          return <Badge variant="secondary">Low</Badge>
+          return <Badge className="bg-gray-300 text-gray-700 border border-gray-400">Low</Badge>
         default:
           return <Badge variant="outline">{priority}</Badge>
       }
@@ -371,7 +359,6 @@ export function QATrackingTable({
                   <ArrowUpDown className="ml-2 h-3 w-3" />
                 </Button>
               </TableHead>
-              <TableHead>Source</TableHead>
               <TableHead>
                 <Button
                   variant="ghost"
@@ -386,55 +373,111 @@ export function QATrackingTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedItems.map((item) => (
-              <TableRow
-                key={item.id}
-                className={cn("cursor-pointer hover:bg-muted/50", selectedItemId === item.id && "bg-accent")}
-                onClick={() => onItemClick(item)}
-              >
-                <TableCell style={{ width: `${questionColumnWidth}px` }}>
-                  <div className="flex items-start gap-2">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <div
-                      className={wordWrapEnabled ? "whitespace-normal break-words" : "truncate"}
-                      title={item.question}
-                    >
-                      <span className="font-medium">{item.question}</span>
-                    </div>
-                  </div>
-                </TableCell>
-                {!isBuySide && (
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Building className="h-3 w-3 text-muted-foreground" />
-                      {formatBuyerId(item.buyerId)}
-                    </div>
-                  </TableCell>
-                )}
-                <TableCell>{getStatusBadge(item.status)}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-xs">
-                    {item.category}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {item.status === "Complete" && item.linkedFiles.length > 0 ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-auto p-1 text-primary hover:text-primary/80"
-                      onClick={(e) => handleSourceClick(e, item.linkedFiles)}
-                    >
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      View Source
-                    </Button>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">-</span>
+            {sortedItems.map((item) => {
+              const isExpanded = expandedAnswers.has(item.id)
+              const hasAnswer = item.status === "Complete" && (item.answer || generatingAnswers.has(item.id))
+              
+              return (
+                <React.Fragment key={item.id}>
+                  <TableRow
+                    className={cn(
+                      "cursor-pointer hover:bg-muted/50", 
+                      selectedItemId === item.id && "bg-accent",
+                      hasAnswer && isExpanded && "border-b-0"
+                    )}
+                    onClick={() => {
+                      if (hasAnswer) {
+                        setExpandedAnswers(prev => {
+                          const newSet = new Set(prev)
+                          if (newSet.has(item.id)) {
+                            newSet.delete(item.id)
+                          } else {
+                            newSet.add(item.id)
+                          }
+                          return newSet
+                        })
+                      } else {
+                        onItemClick(item)
+                      }
+                    }}
+                  >
+                    <TableCell style={{ width: `${questionColumnWidth}px` }}>
+                      <div className="flex items-start gap-2">
+                        <div className="relative">
+                          <MessageSquare className={cn(
+                            "h-4 w-4 mt-0.5 flex-shrink-0",
+                            hasAnswer ? "text-secondary" : "text-muted-foreground"
+                          )} />
+                          {hasAnswer && (
+                            <div className="absolute -top-1 -right-1 h-2 w-2 bg-secondary rounded-full" />
+                          )}
+                        </div>
+                        <div
+                          className={wordWrapEnabled ? "whitespace-normal break-words" : "truncate"}
+                          title={item.question}
+                        >
+                          <span className="font-medium">{item.question}</span>
+                          {hasAnswer && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <Badge 
+                                variant={isExpanded ? "default" : "secondary"} 
+                                className="text-xs px-2 py-0.5 font-medium"
+                              >
+                                {isExpanded ? "▼ Hide Answer" : "▶ View Answer"}
+                              </Badge>
+                              {item.answerSources && item.answerSources.length > 0 && (
+                                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                                  <FileText className="h-3 w-3 mr-1" />
+                                  {item.answerSources.length} source{item.answerSources.length !== 1 ? 's' : ''}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                          {item.status === "Open" && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 text-muted-foreground">
+                                Awaiting response
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    {!isBuySide && (
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Building className="h-3 w-3 text-muted-foreground" />
+                          {formatBuyerId(item.buyerId)}
+                        </div>
+                      </TableCell>
+                    )}
+                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">
+                        {item.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{getPriorityBadge(item.priority, item.id)}</TableCell>
+                  </TableRow>
+                  
+                  {/* Expandable Answer Row */}
+                  {hasAnswer && isExpanded && (
+                    <TableRow className="bg-muted/20 hover:bg-muted/20">
+                      <TableCell colSpan={isBuySide ? 4 : 5} className="py-4 px-6">
+                        <div className="max-w-4xl">
+                          <AnswerCollapsible
+                            question={item}
+                            onViewDocument={onViewDocument}
+                            onGenerateAnswer={onGenerateAnswer}
+                            isGenerating={generatingAnswers.has(item.id)}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   )}
-                </TableCell>
-                <TableCell>{getPriorityBadge(item.priority, item.id)}</TableCell>
-              </TableRow>
-            ))}
+                </React.Fragment>
+              )
+            })}
           </TableBody>
         </Table>
       </div>

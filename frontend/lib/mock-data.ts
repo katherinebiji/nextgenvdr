@@ -514,7 +514,7 @@ export const mockQATrackingItems: QATrackingItem[] = [
     dueDate: "2024-01-20",
     reviewedByBank: "Yes",
     description: "Detailed breakdown of revenue streams including growth trends, seasonality, and key drivers.",
-    linkedFiles: ["file-4"], // Links to Financial Statements Q4 2023.pdf
+    linkedFiles: ["file-4"],
     submittedDate: "2024-01-10",
     history: [
       { date: "2024-01-10", action: "Submitted", user: "Buyer A", note: "Initial question submitted" },
@@ -522,6 +522,29 @@ export const mockQATrackingItems: QATrackingItem[] = [
       { date: "2024-01-18", action: "Answered", user: "Finance Team", note: "Complete response provided" },
       { date: "2024-01-20", action: "Approved", user: "Bank Reviewer", note: "Response approved" },
     ],
+    answer: "The company operates through three main revenue streams: (1) Software Licensing generating $45M annually with 15% YoY growth, (2) Professional Services contributing $28M with 22% growth, and (3) Maintenance & Support at $12M with stable 8% growth. Overall revenue has grown from $68M in 2021 to $85M in 2023, demonstrating strong market position and customer retention.",
+    answerSources: [
+      {
+        document_id: "file-4",
+        document_name: "Financial Statements Q4 2023.pdf",
+        chunk_index: 1,
+        start_position: 156,
+        end_position: 423,
+        content: "Revenue breakdown by segment shows software licensing at $45M (53%), professional services at $28M (33%), and maintenance at $12M (14%)...",
+        similarity_score: 0.89
+      },
+      {
+        document_id: "file-4", 
+        document_name: "Financial Statements Q4 2023.pdf",
+        chunk_index: 3,
+        start_position: 890,
+        end_position: 1150,
+        content: "Three-year revenue trend analysis demonstrates consistent growth trajectory with CAGR of 18.2%...",
+        similarity_score: 0.82
+      }
+    ],
+    answeredDate: "2024-01-18T14:30:00Z",
+    answeredBy: "Finance Team"
   },
   {
     id: "qa-2",
@@ -548,15 +571,15 @@ export const mockQATrackingItems: QATrackingItem[] = [
     id: "qa-3",
     question: "What is the company's customer concentration risk and retention rates?",
     buyerId: "buyer-a",
-    status: "Complete", // Changed from Open to Complete to show source link
+    status: "Complete",
     team: "Commercial",
     category: "Commercial",
     subcategory: "Customer Analysis",
     priority: "Medium",
     dueDate: "2024-01-28",
-    reviewedByBank: "Yes", // Changed from Not Started to Yes
+    reviewedByBank: "Yes",
     description: "Analysis of top customer relationships, contract terms, and historical retention metrics.",
-    linkedFiles: ["file-3"], // Links to Customer Contracts Summary.xlsx
+    linkedFiles: ["file-3"],
     submittedDate: "2024-01-14",
     history: [
       { date: "2024-01-14", action: "Submitted", user: "Buyer A", note: "Customer analysis request" },
@@ -564,6 +587,29 @@ export const mockQATrackingItems: QATrackingItem[] = [
       { date: "2024-01-20", action: "Answered", user: "Commercial Team", note: "Complete analysis provided" },
       { date: "2024-01-22", action: "Approved", user: "Bank Reviewer", note: "Response approved" },
     ],
+    answer: "Customer concentration analysis reveals moderate risk with top 5 customers representing 42% of total revenue. Customer retention rate averages 94% over the past 3 years, with enterprise customers showing 98% retention. The largest customer accounts for 12% of revenue with 5-year contract terms and automatic renewal clauses.",
+    answerSources: [
+      {
+        document_id: "file-3",
+        document_name: "Customer Contracts Summary.xlsx",
+        chunk_index: 0,
+        start_position: 45,
+        end_position: 312,
+        content: "Top 5 customer analysis shows concentration levels within industry benchmarks. Customer A: 12% revenue share, Customer B: 11%, Customer C: 8%...",
+        similarity_score: 0.91
+      },
+      {
+        document_id: "file-3",
+        document_name: "Customer Contracts Summary.xlsx", 
+        chunk_index: 2,
+        start_position: 678,
+        end_position: 945,
+        content: "Retention metrics by customer segment: Enterprise (98%), Mid-market (92%), SMB (88%). Annual churn analysis shows improving trend...",
+        similarity_score: 0.85
+      }
+    ],
+    answeredDate: "2024-01-20T11:45:00Z",
+    answeredBy: "Commercial Team"
   },
   {
     id: "qa-4",
@@ -628,7 +674,7 @@ export const mockQATrackingItems: QATrackingItem[] = [
     dueDate: "2024-01-18",
     reviewedByBank: "Yes",
     description: "Details on board structure, governance policies, and organizational hierarchy.",
-    linkedFiles: ["file-1", "file-2"], // Links to Articles of Incorporation and Board Resolutions
+    linkedFiles: ["file-1", "file-2"],
     submittedDate: "2024-01-08",
     history: [
       { date: "2024-01-08", action: "Submitted", user: "Buyer A", note: "Corporate governance inquiry" },
@@ -636,5 +682,28 @@ export const mockQATrackingItems: QATrackingItem[] = [
       { date: "2024-01-15", action: "Answered", user: "Legal Team", note: "Complete documentation provided" },
       { date: "2024-01-18", action: "Approved", user: "Bank Reviewer", note: "Response approved" },
     ],
+    answer: "The company operates under a standard Delaware C-Corporation structure with a 7-member Board of Directors including 3 independent directors. The board meets quarterly with established audit, compensation, and governance committees. All corporate governance policies comply with Sarbanes-Oxley requirements and include robust conflict of interest and ethics policies.",
+    answerSources: [
+      {
+        document_id: "file-1",
+        document_name: "Articles of Incorporation.pdf",
+        chunk_index: 0,
+        start_position: 234,
+        end_position: 567,
+        content: "Board composition consists of seven directors, three of whom qualify as independent under NYSE standards. Board committees include Audit, Compensation, and Nominating & Governance...",
+        similarity_score: 0.93
+      },
+      {
+        document_id: "file-2",
+        document_name: "Board Resolutions 2023.pdf",
+        chunk_index: 1,
+        start_position: 89,
+        end_position: 456,
+        content: "Corporate governance framework established under Delaware General Corporation Law with quarterly board meetings and annual shareholder meetings...",
+        similarity_score: 0.88
+      }
+    ],
+    answeredDate: "2024-01-15T16:20:00Z",
+    answeredBy: "Legal Team"
   },
 ]

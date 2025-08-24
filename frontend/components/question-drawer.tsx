@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { X, FileText, Calendar, User, Building, CheckCircle, Clock, AlertCircle, Link } from "lucide-react"
-import type { TrackerItem, CategorySuggestion, File } from "@/lib/store"
+import { AnswerCollapsible } from "@/components/answer-collapsible"
+import type { TrackerItem, CategorySuggestion, File, QATrackingItem } from "@/lib/store"
 
 interface QuestionDrawerProps {
-  item: TrackerItem | null
+  item: TrackerItem | QATrackingItem | null
   isOpen: boolean
   onClose: () => void
   categorySuggestion?: CategorySuggestion
@@ -18,6 +19,9 @@ interface QuestionDrawerProps {
   onAcceptCategory?: (category: string, subcategory: string) => void
   onAssignTeam?: (team: string) => void
   onUpdateReviewStatus?: (status: TrackerItem["reviewedByBank"]) => void
+  onGenerateAnswer?: (questionId: string) => Promise<void>
+  onViewDocument?: (documentId: string, highlights?: any[]) => void
+  isGeneratingAnswer?: boolean
 }
 
 export function QuestionDrawer({
@@ -29,13 +33,20 @@ export function QuestionDrawer({
   onAcceptCategory,
   onAssignTeam,
   onUpdateReviewStatus,
+  onGenerateAnswer,
+  onViewDocument,
+  isGeneratingAnswer = false,
 }: QuestionDrawerProps) {
   const [selectedTeam, setSelectedTeam] = useState(item?.team || "")
   const [selectedReviewStatus, setSelectedReviewStatus] = useState(item?.reviewedByBank || "Not Started")
 
   if (!item) return null
 
-  const getStatusIcon = (status: TrackerItem["status"]) => {
+  const isQATrackingItem = (item: any): item is QATrackingItem => {
+    return 'question' in item
+  }
+
+  const getStatusIcon = (status: TrackerItem["status"] | QATrackingItem["status"]) => {
     switch (status) {
       case "Complete":
         return <CheckCircle className="h-4 w-4 text-secondary" />
@@ -76,8 +87,12 @@ export function QuestionDrawer({
         <SheetHeader className="space-y-3">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <SheetTitle className="text-xl">{item.indexLink}</SheetTitle>
-              <SheetDescription className="text-base">{item.requestedItem}</SheetDescription>
+              <SheetTitle className="text-xl">
+                {isQATrackingItem(item) ? item.question : item.indexLink}
+              </SheetTitle>
+              <SheetDescription className="text-base">
+                {isQATrackingItem(item) ? item.description : item.requestedItem}
+              </SheetDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
@@ -165,10 +180,14 @@ export function QuestionDrawer({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Folder Path</label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  {isQATrackingItem(item) ? "Category" : "Folder Path"}
+                </label>
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-mono">{item.folderPath}</span>
+                  <span className="text-sm font-mono">
+                    {isQATrackingItem(item) ? `${item.category} / ${item.subcategory}` : item.folderPath}
+                  </span>
                 </div>
               </div>
             </div>
@@ -178,6 +197,19 @@ export function QuestionDrawer({
               <p className="text-sm bg-muted p-3 rounded-md">{item.description}</p>
             </div>
           </div>
+
+          {/* Answer Section for QA Tracking Items */}
+          {isQATrackingItem(item) && (
+            <div className="space-y-3">
+              <h3 className="font-semibold">Answer</h3>
+              <AnswerCollapsible
+                question={item}
+                onViewDocument={onViewDocument}
+                onGenerateAnswer={onGenerateAnswer}
+                isGenerating={isGeneratingAnswer}
+              />
+            </div>
+          )}
 
           {/* Team Assignment */}
           <div className="space-y-3">
