@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Image from "next/image";
-import logo from "@/public/logo!!!.png";
+import logo from "@/public/logo_transparent.png";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Building2, Search, Users, MessageSquare, ChevronRight, Plus } from "lucide-react"
 
@@ -71,7 +71,7 @@ export default function ProjectsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div>
-                <Image src="/logo!!!.png" alt="Logo" width={100} height={100} />
+                <Image src="/logo_transparent.png" alt="Logo" width={100} height={100} />
               </div>
             </div>
 
