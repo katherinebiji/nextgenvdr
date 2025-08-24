@@ -4,7 +4,7 @@ import type React from "react"
 import Link from "next/link"
 import { usePathname, useParams } from "next/navigation"
 import Image from "next/image";
-import logo from "@/public/logo!!!.png";
+import logo from "@/public/white_logo.png";
 import {
   FileText,
   MessageSquare,
@@ -54,28 +54,28 @@ export function ProjectLayout({ children }: ProjectLayoutProps) {
       {/* Sidebar */}
       <div className="w-64 border-r flex flex-col border-purple-200 bg-purple-900">
         {/* Project Header */}
-        <div className="p-4 border-b border-purple-700 bg-purple-900">
+        <div className="p-6 border-b border-purple-700 bg-purple-900">
           <Link
             href="/projects"
-            className="flex items-center gap-2 text-sm mb-3 text-purple-200 hover:text-white"
+            className="flex items-center gap-2 text-sm mb-4 text-purple-200 hover:text-white transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to Projects
           </Link>
-          <div className="flex items-center gap-3">
-          <div>
-                <Image src="/logo!!!.png" alt="Logo" width={100} height={100} />
-          </div>
-            <div>
-              <h2 className="font-semibold text-white">{projectName}</h2>
+          <div className="flex flex-col items-start gap-3 pl-4">
+            <div className="w-full flex justify-left">
+              <Image src="/white_logo.png" alt="Logo" width={80} height={80} />
+            </div>
+            <div className="text-left">
+              <h2 className="font-semibold text-white text-lg">{projectName}</h2>
               <p className="text-sm text-purple-200">{projectType}</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <ul className="space-y-1">
+        <nav className="flex-1 p-6">
+          <ul className="space-y-2">
             {navigation.map((item) => {
               const href = `/projects/${projectId}${item.href}`
               const isActive = pathname === href
@@ -85,13 +85,13 @@ export function ProjectLayout({ children }: ProjectLayoutProps) {
                   <Link
                     href={href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-black/20 text-white"
-                        : "text-purple-100 hover:text-white hover:bg-purple-800"
+                        ? "bg-purple-800 text-white shadow-sm"
+                        : "text-purple-100 hover:text-white hover:bg-purple-800/50"
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
                     {item.name}
                   </Link>
                 </li>
@@ -101,8 +101,8 @@ export function ProjectLayout({ children }: ProjectLayoutProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-purple-700 bg-purple-900">
-          <div className="text-xs text-purple-200">
+        <div className="p-6 border-t border-purple-700 bg-purple-900">
+          <div className="text-xs text-purple-200 space-y-1">
             <p>VDR v2.1.0</p>
             <p>© 2024 Enterprise Banking</p>
           </div>
