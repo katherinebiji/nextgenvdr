@@ -153,7 +153,8 @@ def process_document_for_rag(
     result = doc_processor.process_document(
         document_content=document.content,
         document_name=document.name,
-        document_id=document.id
+        document_id=document.id,
+        db=db
     )
     
     if not result["success"]:
@@ -219,10 +220,34 @@ def rag_chat(
         chat_history=chat_history
     )
     
+    # Get detailed source information if documents were used
+    detailed_sources = []
+    used_documents = result.get("agent_used_retrieval", False)
+    
+    # If the agent used retrieval, get the actual source documents
+    if used_documents:
+        similar_docs = doc_processor.search_similar_documents(
+            query=message,
+            k=5,
+            score_threshold=0.2
+        )
+        
+        # Convert to detailed source format
+        for doc in similar_docs:
+            detailed_sources.append({
+                "document_id": doc["document_id"],
+                "document_name": doc["document_name"],
+                "chunk_index": doc["chunk_index"],
+                "start_position": doc.get("start_position", 0),
+                "end_position": doc.get("end_position", 0),
+                "content": doc["content"],
+                "similarity_score": doc["similarity_score"]
+            })
+    
     return {
         "response": result["response"],
-        "used_documents": result["used_documents"],
-        "sources": result["sources"],
+        "used_documents": used_documents,
+        "sources": detailed_sources,
         "success": result["success"],
         "message_type": result["message_type"]
     }
@@ -316,7 +341,8 @@ def bulk_process_documents_for_rag(
             result = doc_processor.process_document(
                 document_content=document.content,
                 document_name=document.name,
-                document_id=document.id
+                document_id=document.id,
+                db=db
             )
             
             if result["success"]:

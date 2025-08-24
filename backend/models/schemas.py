@@ -13,8 +13,6 @@ class UserCreate(UserBase):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-    role: str
-    name: str
 
 class User(UserBase):
     id: str

@@ -5,13 +5,28 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { MessageCircle, X, Send, Loader2 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { MessageCircle, X, Send, Loader2, FileText, Eye } from "lucide-react"
+import { DocumentPreviewModal } from "./document-preview-modal"
+import { useAppStore } from "@/lib/store"
+
+interface Source {
+  document_id: string
+  document_name: string
+  chunk_index: number
+  start_position: number
+  end_position: number
+  content: string
+  similarity_score: number
+}
 
 interface Message {
   id: string
   text: string
   isBot: boolean
   timestamp: Date
+  sources?: Source[]
+  usedDocuments?: boolean
 }
 
 export function Chatbot() {
@@ -19,18 +34,21 @@ export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hi! I'm your AI assistant. How can I help you with your Q&A tracking?",
+      text: "Hi! I'm your AI assistant. I can help you with document analysis and Q&A tracking using your uploaded documents.",
       isBot: true,
       timestamp: new Date()
     }
   ])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(null)
+  const [previewHighlights, setPreviewHighlights] = useState<any[]>([])
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { ragChat } = useAppStore()
 
   // Toggle between mock and real API - change this to false to use localhost
-  const useMockAPI = true
+  const useMockAPI = false
 
   const sendMockResponse = async (message: string, onChunk: (chunk: string) => void) => {
     // Mock streaming responses based on user input
@@ -149,16 +167,43 @@ export function Chatbot() {
     }
   }
 
-  const sendChatMessage = async (message: string, onChunk: (chunk: string) => void) => {
+  const sendChatMessage = async (message: string, onChunk: (chunk: string) => void, onComplete: (sources?: Source[]) => void) => {
     try {
       if (useMockAPI) {
         await sendMockResponse(message, onChunk)
+        onComplete()
       } else {
-        await sendLocalhostRequest(message, onChunk)
+        // Use the real RAG API
+        const chatHistory = messages.slice(-10).map(msg => ({
+          role: msg.isBot ? "assistant" : "user",
+          content: msg.text
+        }))
+        
+        const response = await ragChat(message, chatHistory)
+        
+        // Stream the response
+        for (const char of response.response) {
+          onChunk(char)
+          await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        
+        // Parse sources from response
+        const sources: Source[] = response.sources?.map((source: any) => ({
+          document_id: source.document_id,
+          document_name: source.document_name,
+          chunk_index: source.chunk_index,
+          start_position: source.start_position,
+          end_position: source.end_position,
+          content: source.content,
+          similarity_score: source.similarity_score
+        })) || []
+        
+        onComplete(sources)
       }
     } catch (error) {
       console.error('Chat message error:', error)
       onChunk("I'm having trouble connecting to the chat service. Please try again later.")
+      onComplete()
     }
   }
 
@@ -192,15 +237,28 @@ export function Chatbot() {
 
     // Handle streaming response
     try {
-      await sendChatMessage(messageText, (chunk: string) => {
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === botMessageId 
-              ? { ...msg, text: msg.text + chunk }
-              : msg
+      await sendChatMessage(
+        messageText, 
+        (chunk: string) => {
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === botMessageId 
+                ? { ...msg, text: msg.text + chunk }
+                : msg
+            )
           )
-        )
-      })
+        },
+        (sources?: Source[]) => {
+          // Update the message with sources when complete
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === botMessageId 
+                ? { ...msg, sources, usedDocuments: Boolean(sources?.length) }
+                : msg
+            )
+          )
+        }
+      )
     } catch (error) {
       console.error('Error sending message:', error)
       setMessages(prev => 
@@ -265,14 +323,69 @@ export function Chatbot() {
                     key={message.id}
                     className={`flex ${message.isBot ? "justify-start" : "justify-end"}`}
                   >
-                    <div
-                      className={`max-w-[85%] p-3 rounded-lg text-sm leading-relaxed break-words whitespace-pre-wrap ${
-                        message.isBot
-                          ? "bg-muted text-foreground"
-                          : "bg-primary text-primary-foreground"
-                      }`}
-                    >
-                      {message.text}
+                    <div className={`max-w-[85%] space-y-2`}>
+                      <div
+                        className={`p-3 rounded-lg text-sm leading-relaxed break-words whitespace-pre-wrap ${
+                          message.isBot
+                            ? "bg-muted text-foreground"
+                            : "bg-primary text-primary-foreground"
+                        }`}
+                      >
+                        {message.text}
+                      </div>
+                      
+                      {/* Source Attribution for Bot Messages */}
+                      {message.isBot && message.sources && message.sources.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              <FileText className="h-3 w-3 mr-1" />
+                              {message.sources.length} source{message.sources.length !== 1 ? 's' : ''}
+                            </Badge>
+                            {message.usedDocuments && (
+                              <Badge variant="secondary" className="text-xs">
+                                Document analysis used
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-1">
+                            {message.sources.slice(0, 3).map((source, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 bg-background border rounded text-xs">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                  <span className="truncate font-medium">{source.document_name}</span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {Math.round(source.similarity_score * 100)}%
+                                  </Badge>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0"
+                                  onClick={() => {
+                                    setPreviewDocumentId(source.document_id)
+                                    setPreviewHighlights([{
+                                      chunk_id: `${source.document_id}_${source.chunk_index}`,
+                                      start_position: source.start_position,
+                                      end_position: source.end_position,
+                                      content: source.content
+                                    }])
+                                  }}
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                            
+                            {message.sources.length > 3 && (
+                              <div className="text-xs text-muted-foreground text-center py-1">
+                                +{message.sources.length - 3} more sources
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -315,6 +428,18 @@ export function Chatbot() {
           </div>
         </div>
       )}
+      
+      {/* Document Preview Modal */}
+      <DocumentPreviewModal
+        isOpen={!!previewDocumentId}
+        onClose={() => {
+          setPreviewDocumentId(null)
+          setPreviewHighlights([])
+        }}
+        documentId={previewDocumentId || ""}
+        highlightChunks={previewHighlights}
+        title="Source Document"
+      />
     </div>
   )
 }
