@@ -12,9 +12,9 @@ import { Building2, Search, Users, MessageSquare, ChevronRight, Plus } from "luc
 // Mock project data
 const projects = [
   {
-            id: "project-cerebral",
-        name: "Project Cerebral",
-    description: "Strategic acquisition of manufacturing assets",
+    id: "project-cerebral",
+    name: "Project Cerebral",
+    description: "Sell-side to a strategic buyer",
     buyers: ["Buyer A", "Buyer B"],
     qaCompletionPct: 78,
     lastActivity: "2 hours ago",
@@ -25,9 +25,9 @@ const projects = [
   {
     id: "project-valley",
     name: "Project Valley",
-    description: "Healthcare services consolidation and expansion",
-    buyers: ["Buyer A", "Buyer B"],
-    qaCompletionPct: 63,
+    description: "Strategic acquisition of large cap technology company",
+    buyers: ["", ""],
+    qaCompletionPct: 78,
     lastActivity: "4 hours ago",
     status: "Active",
     dueDate: "2024-02-28",
@@ -102,7 +102,7 @@ export default function ProjectsPage() {
           {/* Page Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-bold font-serif">Your Projects</h2>
+              <h2 className="text-3xl font-bold font-serif">Project Dashboard</h2>
               <p className="text-muted-foreground mt-1">Manage your active data rooms and transactions</p>
             </div>
             <Button className="gap-2">
@@ -131,20 +131,29 @@ export default function ProjectsPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {/* Buyers */}
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {project.buyers.length} buyer{project.buyers.length !== 1 ? "s" : ""}
-                    </span>
-                    <div className="flex gap-1">
-                      {project.buyers.map((buyer, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {buyer}
-                        </Badge>
-                      ))}
+                  {/* Buyers or Process Type */}
+                  {project.buyers.some(buyer => buyer.trim() !== '') ? (
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {project.buyers.filter(buyer => buyer.trim() !== '').length} buyer{project.buyers.filter(buyer => buyer.trim() !== '').length !== 1 ? "s" : ""}
+                      </span>
+                      <div className="flex gap-1">
+                        {project.buyers.filter(buyer => buyer.trim() !== '').map((buyer, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {buyer}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <Badge variant="outline" className="text-xs">
+                        Buy-Side Process
+                      </Badge>
+                    </div>
+                  )}
 
                   {/* Q&A Progress */}
                   <div className="space-y-2">
