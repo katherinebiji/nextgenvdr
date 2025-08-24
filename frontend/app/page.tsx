@@ -11,7 +11,7 @@ function NextGenVDRLogo() {
   return (
     <div className="flex justify-center mb-6">
       <img 
-        src="/logo!!!.png" 
+        src="/logo_transparent.png" 
         alt="NextGen VDR Logo" 
         className="h-16 w-auto"
       />
