@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { Upload, File, X, CheckCircle, AlertCircle, Folder, Brain, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -80,6 +80,7 @@ export function BulkUploadZone() {
   const [folderMode, setFolderMode] = useState<"manual" | "ai">("manual")
   const [showPreview, setShowPreview] = useState(false)
   const [filePreviews, setFilePreviews] = useState<FilePreview[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -340,11 +341,20 @@ export function BulkUploadZone() {
               <p className="text-muted-foreground mb-4">
                 Support for multiple file formats: PDF, DOC, XLS, PPT, TXT, and more
               </p>
-              <input type="file" multiple onChange={handleFileSelect} className="hidden" id="file-upload" />
-              <Button asChild>
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  Select Files
-                </label>
+              <input 
+                type="file" 
+                multiple 
+                onChange={handleFileSelect} 
+                className="hidden" 
+                ref={fileInputRef}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              />
+              <Button 
+                onClick={() => fileInputRef.current?.click()}
+                className="cursor-pointer"
+                type="button"
+              >
+                Select Files
               </Button>
             </div>
           </div>

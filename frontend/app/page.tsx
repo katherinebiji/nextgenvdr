@@ -7,22 +7,48 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Building2, Mail, Lock } from "lucide-react"
+import { Building2, Mail, Lock, User } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import apiService from "@/lib/api"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
+  const [role, setRole] = useState("")
+  const [isLogin, setIsLogin] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Mock login delay
-    setTimeout(() => {
+    try {
+      if (isLogin) {
+        const response = await apiService.login(email, password, name || "User", role || "buyer")
+        if (response.success) {
+          window.location.href = "/projects"
+        } else {
+          setError(response.error || "Login failed")
+        }
+      } else {
+        const response = await apiService.register(email, password, name, role)
+        if (response.success) {
+          setError("")
+          setIsLogin(true)
+          // Clear form
+          setPassword("")
+        } else {
+          setError(response.error || "Registration failed")
+        }
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+    } finally {
       setIsLoading(false)
-      // Redirect to projects page
-      window.location.href = "/projects"
-    }, 1000)
+    }
   }
 
   return (
@@ -41,14 +67,24 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Login Form */}
+        {/* Login/Register Form */}
         <Card className="border-border shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold">Sign in</CardTitle>
-            <CardDescription>Enter your email to access your data rooms</CardDescription>
+            <CardTitle className="text-2xl font-semibold">
+              {isLogin ? "Sign in" : "Create Account"}
+            </CardTitle>
+            <CardDescription>
+              {isLogin ? "Enter your credentials to access your data rooms" : "Register for NextGenVDR access"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -65,19 +101,81 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !email}>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+
+              {(!isLogin || !isLogin) && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="pl-10"
+                      required={!isLogin}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Select value={role} onValueChange={setRole} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="buyer">Buyer</SelectItem>
+                    <SelectItem value="seller">Seller</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading || !email || !password || (!isLogin && !name) || !role}>
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                    Signing in...
+                    {isLogin ? "Signing in..." : "Creating account..."}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Lock className="h-4 w-4" />
-                    Sign in
+                    {isLogin ? "Sign in" : "Create Account"}
                   </div>
                 )}
               </Button>
+
+              <div className="text-center text-sm">
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => {
+                    setIsLogin(!isLogin)
+                    setError("")
+                    setPassword("")
+                  }}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  {isLogin ? "Need an account? Register here" : "Already have an account? Sign in"}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
