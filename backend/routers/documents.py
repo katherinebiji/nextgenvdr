@@ -8,6 +8,7 @@ from database import get_db
 from models import schemas, models
 import crud
 import auth
+from services.document_processor import DocumentProcessor
 
 router = APIRouter()
 
@@ -115,3 +116,82 @@ def get_document_content(
         raise HTTPException(status_code=404, detail="Document not found")
     
     return {"content": document.content}
+
+@router.get("/{document_id}/preview")
+def get_document_preview(
+    document_id: str,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get document content and chunks for preview with highlighting."""
+    document = crud.get_document(db, document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    doc_processor = DocumentProcessor()
+    
+    # Get document text content
+    document_text = doc_processor.get_document_text(document_id)
+    
+    # Get all chunks for this document
+    chunks = doc_processor.get_document_chunks(document_id)
+    
+    return {
+        "document_id": document_id,
+        "document_name": document.name,
+        "document_type": document.type,
+        "text_content": document_text,
+        "chunks": chunks,
+        "processing_status": document.processing_status
+    }
+
+@router.get("/{document_id}/chunks/{chunk_id}")
+def get_document_chunk(
+    document_id: str,
+    chunk_id: str,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get specific chunk content with position data for highlighting."""
+    chunk = db.query(models.DocumentChunk).filter(
+        models.DocumentChunk.document_id == document_id,
+        models.DocumentChunk.id == chunk_id
+    ).first()
+    
+    if not chunk:
+        raise HTTPException(status_code=404, detail="Chunk not found")
+    
+    return {
+        "chunk_id": chunk.id,
+        "document_id": chunk.document_id,
+        "content": chunk.content,
+        "chunk_index": chunk.chunk_index,
+        "start_position": chunk.start_position,
+        "end_position": chunk.end_position,
+        "chunk_length": chunk.chunk_length
+    }
+
+@router.post("/{document_id}/process")
+async def process_document_for_rag(
+    document_id: str,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Process a document for RAG (extract text, chunk, and embed)."""
+    document = crud.get_document(db, document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    doc_processor = DocumentProcessor()
+    result = doc_processor.process_document(
+        document.content, 
+        document.name, 
+        document.id,
+        db
+    )
+    
+    return {
+        "document_id": document_id,
+        "processing_result": result,
+        "status": "processing_started" if result["success"] else "processing_failed"
+    }

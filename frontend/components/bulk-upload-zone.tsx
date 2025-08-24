@@ -22,7 +22,8 @@ interface UploadFile {
   status: "pending" | "uploading" | "completed" | "error"
   progress: number
   folder?: string
-  content?: ArrayBuffer
+  content?: globalThis.File
+  documentId?: string  // Backend document ID after upload
   aiSuggestion?: {
     folder: string
     confidence: number
@@ -132,7 +133,7 @@ export function BulkUploadZone() {
   const [filePreviews, setFilePreviews] = useState<FilePreview[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  const { currentUser, currentProject, addFileWithContent } = useAppStore()
+  const { currentUser, currentProject, uploadFileToBackend, processDocumentForRAG } = useAppStore()
   const subfolders = getSubfolders()
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -166,44 +167,24 @@ export function BulkUploadZone() {
     [folderMode],
   )
 
-  const addFiles = async (newFiles: File[]) => {
+  const addFiles = async (newFiles: globalThis.File[]) => {
     const uploadFiles: UploadFile[] = []
     
     for (const file of newFiles) {
       const aiSuggestion = getAISuggestion(file.name)
       
-      try {
-        // Read file content
-        const content = await file.arrayBuffer()
-        
-        const uploadFile: UploadFile = {
-          id: Math.random().toString(36).substr(2, 9),
-          name: file.name,
-          size: file.size,
-          status: "pending",
-          progress: 0,
-          folder: folderMode === "ai" ? aiSuggestion.folder : defaultFolder || undefined,
-          content: content,
-          aiSuggestion: aiSuggestion,
-        }
-        
-        uploadFiles.push(uploadFile)
-      } catch (error) {
-        console.error(`Failed to read file ${file.name}:`, error)
-        
-        const uploadFile: UploadFile = {
-          id: Math.random().toString(36).substr(2, 9),
-          name: file.name,
-          size: file.size,
-          status: "error",
-          progress: 0,
-          folder: folderMode === "ai" ? aiSuggestion.folder : defaultFolder || undefined,
-          aiSuggestion: aiSuggestion,
-          error: "Failed to read file",
-        }
-        
-        uploadFiles.push(uploadFile)
+      const uploadFile: UploadFile = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: file.name,
+        size: file.size,
+        status: "pending",
+        progress: 0,
+        folder: folderMode === "ai" ? aiSuggestion.folder : defaultFolder || undefined,
+        content: file,  // Store the actual File object for upload
+        aiSuggestion: aiSuggestion,
       }
+      
+      uploadFiles.push(uploadFile)
     }
 
     setFiles((prev) => [...prev, ...uploadFiles])
@@ -228,41 +209,48 @@ export function BulkUploadZone() {
         setTimeout(async () => {
           setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, status: "uploading" } : f)))
 
-          // Simulate upload progress
-          const interval = setInterval(async () => {
-            setFiles((prev) =>
-              prev.map((f) => {
-                if (f.id === file.id && f.status === "uploading") {
-                  const newProgress = Math.min(f.progress + 10, 100)
-                  if (newProgress === 100) {
-                    clearInterval(interval)
-                    
-                    // Actually store the file when upload completes
-                    if (f.content && currentUser && currentProject) {
-                      const storeFile: StoreFile = {
-                        id: f.id,
-                        name: f.name,
-                        path: `/${f.folder}/${f.name}`,
-                        folderId: f.folder,
-                        size: f.size,
-                        modified: new Date().toISOString(),
-                        version: "1.0",
-                        visibleTo: "All",
-                        type: f.name.split('.').pop()?.toLowerCase() || "unknown",
-                        uploadedBy: currentUser.name,
-                      }
-                      
-                      addFileWithContent(storeFile, f.content, currentUser.id, currentProject.id)
-                    }
-                    
-                    return { ...f, progress: 100, status: "completed" }
-                  }
-                  return { ...f, progress: newProgress }
-                }
-                return f
-              }),
-            )
-          }, 200)
+          try {
+            // Upload to backend
+            const success = await uploadFileToBackend(file.content, [file.folder])
+            
+            if (success) {
+              // Get the uploaded document info to get the document ID
+              const response = await fetch('/api/documents/')
+              const documents = await response.json()
+              const uploadedDoc = documents.find((d: any) => d.name === file.name)
+              
+              if (uploadedDoc) {
+                // Start RAG processing asynchronously
+                processDocumentForRAG(uploadedDoc.id)
+                
+                setFiles((prev) => prev.map((f) => 
+                  f.id === file.id ? { 
+                    ...f, 
+                    status: "completed", 
+                    progress: 100,
+                    documentId: uploadedDoc.id 
+                  } : f
+                ))
+              }
+            } else {
+              setFiles((prev) => prev.map((f) => 
+                f.id === file.id ? { 
+                  ...f, 
+                  status: "error", 
+                  error: "Upload failed" 
+                } : f
+              ))
+            }
+          } catch (error) {
+            console.error("Upload error:", error)
+            setFiles((prev) => prev.map((f) => 
+              f.id === file.id ? { 
+                ...f, 
+                status: "error", 
+                error: "Upload failed" 
+              } : f
+            ))
+          }
         }, index * 500)
       }
     }
@@ -270,9 +258,9 @@ export function BulkUploadZone() {
     // Show preview after all files are processed
     setTimeout(() => {
       const previews: FilePreview[] = files
-        .filter(f => f.status === "completed" || f.status === "pending")
+        .filter(f => f.status === "completed")
         .map((file) => ({
-          id: file.id,
+          id: file.documentId || file.id,
           name: file.name,
           folder: file.folder || "commercial-customers",
           accessUsers: getFolderAccessUsers(file.folder || "commercial-customers"),

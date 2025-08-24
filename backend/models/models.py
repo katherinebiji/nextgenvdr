@@ -36,14 +36,34 @@ class Document(Base):
     size = Column(Integer, nullable=False)
     type = Column(String, nullable=False)
     content = Column(Text, nullable=False)  # Base64 encoded
+    file_path = Column(String)  # Optional file system path
     tags = Column(Text, nullable=False)  # JSON array as string
     uploaded_by_id = Column(String, ForeignKey("users.id"), nullable=False)
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
     summary = Column(Text)  # AI-generated summary
+    processing_status = Column(String, default="pending")  # pending, processing, completed, failed
+    processed_at = Column(DateTime(timezone=True))
     
     # Relationships
     uploader = relationship("User", back_populates="uploaded_documents")
     related_questions = relationship("Question", secondary=question_documents, back_populates="related_documents")
+    chunks = relationship("DocumentChunk", back_populates="document", cascade="all, delete-orphan")
+
+class DocumentChunk(Base):
+    __tablename__ = "document_chunks"
+    
+    id = Column(String, primary_key=True, index=True)
+    document_id = Column(String, ForeignKey("documents.id"), nullable=False)
+    chunk_index = Column(Integer, nullable=False)
+    content = Column(Text, nullable=False)
+    start_position = Column(Integer)  # Character position in original text
+    end_position = Column(Integer)    # Character position in original text
+    chunk_length = Column(Integer)
+    embedding_id = Column(String)     # ChromaDB embedding ID
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    document = relationship("Document", back_populates="chunks")
 
 class Question(Base):
     __tablename__ = "questions"

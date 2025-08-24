@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { FileStorageManager } from "./file-storage"
+import { apiService } from "./api"
 
 // Mock data types
 export interface Project {
@@ -148,13 +148,14 @@ interface AppState {
   setCurrentRelevance: (relevance: RelevanceSuggestion | null) => void
   setBuyerFilter: (buyer: string) => void
   addFile: (file: File) => void
-  addFileWithContent: (file: File, content: ArrayBuffer, userId: string, projectId: string) => Promise<void>
-  getProjectFiles: (userId: string, projectId: string) => File[]
-  loadProjectFiles: (userId: string, projectId: string) => void
-  deleteFile: (userId: string, projectId: string, fileId: string) => void
-  bulkDeleteFiles: (userId: string, projectId: string, fileIds: string[]) => void
-  purgeAllFiles: (userId: string, projectId: string) => void
-  downloadFile: (userId: string, projectId: string, fileId: string) => void
+  uploadFileToBackend: (file: globalThis.File, tags: string[]) => Promise<boolean>
+  getProjectFiles: () => Promise<File[]>
+  loadProjectFiles: () => Promise<void>
+  deleteFile: (fileId: string) => Promise<boolean>
+  downloadFile: (fileId: string) => Promise<void>
+  getDocumentPreview: (documentId: string) => Promise<any>
+  processDocumentForRAG: (documentId: string) => Promise<any>
+  ragChat: (message: string, chatHistory?: Array<{role: string, content: string}>) => Promise<any>
   updateFileVisibility: (fileId: string, visibleTo: string[] | "All") => void
   updateQuestionCategory: (questionId: string, category: string, subcategory: string) => void
   updateTrackerStatus: (trackerId: string, status: TrackerItem["status"]) => void
@@ -199,42 +200,127 @@ export const useAppStore = create<AppState>((set, get) => ({
   setCurrentRelevance: (relevance) => set({ currentRelevance: relevance }),
   setBuyerFilter: (buyer) => set({ buyerFilter: buyer }),
   addFile: (file) => set((state) => ({ files: [...state.files, file] })),
-  addFileWithContent: async (file, content, userId, projectId) => {
-    await FileStorageManager.storeFile(userId, projectId, file, content)
-    set((state) => ({ files: [...state.files, file] }))
+  uploadFileToBackend: async (file, tags) => {
+    try {
+      const response = await apiService.uploadDocument(file, tags)
+      if (response.success && response.data) {
+        const newFile: File = {
+          id: response.data.id,
+          name: response.data.name,
+          path: `/${response.data.name}`,
+          folderId: tags[0] || "general",
+          size: response.data.size,
+          modified: response.data.uploaded_at,
+          version: "1.0",
+          visibleTo: "All",
+          type: response.data.type,
+          uploadedBy: response.data.uploaded_by
+        }
+        set((state) => ({ files: [...state.files, newFile] }))
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error("Upload failed:", error)
+      return false
+    }
   },
-  getProjectFiles: (userId, projectId) => {
-    return FileStorageManager.getFiles(userId, projectId)
+  getProjectFiles: async () => {
+    try {
+      const response = await apiService.getDocuments()
+      if (response.success && response.data) {
+        return response.data.map((doc: any) => ({
+          id: doc.id,
+          name: doc.name,
+          path: `/${doc.name}`,
+          folderId: doc.tags[0] || "general",
+          size: doc.size,
+          modified: doc.uploaded_at,
+          version: "1.0",
+          visibleTo: "All",
+          type: doc.type,
+          uploadedBy: doc.uploaded_by
+        }))
+      }
+      return []
+    } catch (error) {
+      console.error("Failed to fetch files:", error)
+      return []
+    }
   },
-  loadProjectFiles: (userId, projectId) => {
-    const storedFiles = FileStorageManager.getFiles(userId, projectId)
-    set({ files: storedFiles })
+  loadProjectFiles: async () => {
+    try {
+      const files = await get().getProjectFiles()
+      set({ files })
+    } catch (error) {
+      console.error("Failed to load files:", error)
+    }
   },
-  deleteFile: (userId, projectId, fileId) => {
-    FileStorageManager.deleteFile(userId, projectId, fileId)
-    set((state) => ({ files: state.files.filter(f => f.id !== fileId) }))
+  deleteFile: async (fileId) => {
+    try {
+      const response = await apiService.deleteDocument(fileId)
+      if (response.success) {
+        set((state) => ({ files: state.files.filter(f => f.id !== fileId) }))
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error("Delete failed:", error)
+      return false
+    }
   },
-  bulkDeleteFiles: (userId, projectId, fileIds) => {
-    FileStorageManager.bulkDeleteFiles(userId, projectId, fileIds)
-    set((state) => ({ files: state.files.filter(f => !fileIds.includes(f.id)) }))
+  downloadFile: async (fileId) => {
+    try {
+      const response = await apiService.getDocument(fileId)
+      if (response.success && response.data) {
+        const content = response.data.content
+        if (content.startsWith("data:")) {
+          const link = document.createElement("a")
+          link.href = content
+          link.download = response.data.name
+          link.click()
+        }
+      }
+    } catch (error) {
+      console.error("Download failed:", error)
+    }
   },
-  purgeAllFiles: (userId, projectId) => {
-    FileStorageManager.purgeAllFiles(userId, projectId)
-    set({ files: [] })
+  getDocumentPreview: async (documentId) => {
+    try {
+      const response = await fetch(`/api/documents/${documentId}/preview`)
+      return await response.json()
+    } catch (error) {
+      console.error("Failed to get document preview:", error)
+      return null
+    }
   },
-  downloadFile: (userId, projectId, fileId) => {
-    FileStorageManager.downloadFile(userId, projectId, fileId)
+  processDocumentForRAG: async (documentId) => {
+    try {
+      const response = await fetch(`/api/documents/${documentId}/process`, { method: 'POST' })
+      return await response.json()
+    } catch (error) {
+      console.error("Failed to process document:", error)
+      return null
+    }
+  },
+  ragChat: async (message, chatHistory = []) => {
+    try {
+      const response = await apiService.ragChat(message, chatHistory)
+      return response.data
+    } catch (error) {
+      console.error("RAG chat failed:", error)
+      return {
+        response: "Sorry, I encountered an error while processing your request.",
+        used_documents: false,
+        sources: [],
+        success: false,
+        message_type: "error"
+      }
+    }
   },
   updateFileVisibility: (fileId, visibleTo) => {
     set((state) => {
       const updatedFiles = state.files.map((f) => (f.id === fileId ? { ...f, visibleTo } : f))
-      
-      // Also update in file storage if user and project are available
-      const file = state.files.find(f => f.id === fileId)
-      if (file && state.currentUser && state.currentProject) {
-        FileStorageManager.updateFileVisibility(state.currentUser.id, state.currentProject.id, fileId, visibleTo)
-      }
-      
       return { files: updatedFiles }
     })
   },
