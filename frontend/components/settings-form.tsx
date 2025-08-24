@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { Settings, Users, Shield, Bell, Database, Zap } from "lucide-react"
+import { Settings, Users, Shield, Bell, Database, Zap, HardDrive, Trash2, AlertTriangle } from "lucide-react"
 import type { Settings as SettingsType } from "@/lib/store"
+import { FileStorageManager } from "@/lib/file-storage"
+import { useAppStore } from "@/lib/store"
 
 interface SettingsFormProps {
   settings: SettingsType
@@ -19,6 +21,46 @@ interface SettingsFormProps {
 export function SettingsForm({ settings, onUpdateSettings }: SettingsFormProps) {
   const [localSettings, setLocalSettings] = useState(settings)
   const [hasChanges, setHasChanges] = useState(false)
+  const [storageInfo, setStorageInfo] = useState(FileStorageManager.getStorageInfo())
+  
+  const { currentUser, currentProject, purgeAllFiles } = useAppStore()
+  
+  const refreshStorageInfo = () => {
+    setStorageInfo(FileStorageManager.getStorageInfo())
+  }
+  
+  const handlePurgeAllData = () => {
+    const confirmText = 'PURGE ALL DATA'
+    const userInput = prompt(
+      `⚠️ EXTREME DANGER: This will permanently delete ALL documents from ALL projects.\n\n` +
+      `This includes ${storageInfo.totalFiles} files (${storageInfo.sizeFormatted}).\n\n` +
+      `This action cannot be undone!\n\n` +
+      `Type "${confirmText}" to confirm:`
+    )
+    
+    if (userInput === confirmText) {
+      FileStorageManager.purgeAllData()
+      refreshStorageInfo()
+      alert('All data has been permanently deleted.')
+    }
+  }
+  
+  const handlePurgeCurrentProject = () => {
+    if (!currentUser || !currentProject) return
+    
+    const confirmText = 'DELETE PROJECT DATA'
+    const userInput = prompt(
+      `⚠️ DANGER: This will permanently delete ALL documents in the current project.\n\n` +
+      `This action cannot be undone!\n\n` +
+      `Type "${confirmText}" to confirm:`
+    )
+    
+    if (userInput === confirmText) {
+      purgeAllFiles(currentUser.id, currentProject.id)
+      refreshStorageInfo()
+      alert('Current project documents have been deleted.')
+    }
+  }
 
   const handleSettingChange = <K extends keyof SettingsType>(key: K, value: SettingsType[K]) => {
     setLocalSettings((prev) => ({ ...prev, [key]: value }))
@@ -262,6 +304,77 @@ export function SettingsForm({ settings, onUpdateSettings }: SettingsFormProps) 
                 <SelectItem value="7-days">7 Days</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Storage Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <HardDrive className="h-5 w-5" />
+            Storage Management
+          </CardTitle>
+          <CardDescription>Monitor and manage document storage</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Total Documents</Label>
+              <div className="text-2xl font-bold">{storageInfo.totalFiles}</div>
+              <div className="text-xs text-muted-foreground">files stored locally</div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Storage Used</Label>
+              <div className="text-2xl font-bold">{storageInfo.sizeFormatted}</div>
+              <div className="text-xs text-muted-foreground">in browser storage</div>
+            </div>
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Data Management Actions</Label>
+            <div className="flex flex-col gap-3">
+              <Button
+                variant="outline"
+                onClick={refreshStorageInfo}
+                className="w-full justify-start"
+              >
+                <Database className="h-4 w-4 mr-2" />
+                Refresh Storage Info
+              </Button>
+              
+              {currentUser && currentProject && (
+                <Button
+                  variant="destructive"
+                  onClick={handlePurgeCurrentProject}
+                  className="w-full justify-start"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Purge Current Project
+                </Button>
+              )}
+              
+              <Button
+                variant="destructive"
+                onClick={handlePurgeAllData}
+                className="w-full justify-start border-red-600 bg-red-600 hover:bg-red-700"
+              >
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Purge All Data
+              </Button>
+            </div>
+            
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                <div className="text-sm text-yellow-800">
+                  <strong>Warning:</strong> Purge operations permanently delete documents and cannot be undone. 
+                  Consider backing up important documents before purging.
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

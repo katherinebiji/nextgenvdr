@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { Search, Filter, Upload, Users } from "lucide-react"
+import { Search, Filter, Upload, Users, Trash2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -34,10 +34,14 @@ export default function DocumentsPage() {
     updateFileVisibility,
     loadProjectFiles,
     downloadFile,
+    deleteFile,
+    bulkDeleteFiles,
+    purgeAllFiles,
   } = useAppStore()
 
   const [searchQuery, setSearchQuery] = useState("")
   const [showUpload, setShowUpload] = useState(false)
+  const [showBulkActions, setShowBulkActions] = useState(false)
 
   // Load files from storage
   useEffect(() => {
@@ -100,6 +104,34 @@ export default function DocumentsPage() {
     handleAcceptRelevance(suggestion)
   }
 
+  const handleBulkDelete = (fileIds: string[]) => {
+    if (!currentUser || !currentProject) return
+    bulkDeleteFiles(currentUser.id, currentProject.id, fileIds)
+  }
+
+  const handlePurgeAllDocuments = () => {
+    if (!currentUser || !currentProject) return
+    
+    const fileCount = files.length
+    if (fileCount === 0) {
+      alert('No documents to purge.')
+      return
+    }
+    
+    const confirmText = 'DELETE ALL DOCUMENTS'
+    const userInput = prompt(
+      `⚠️ DANGER: This will permanently delete ALL ${fileCount} documents in this project.\n\n` +
+      `This action cannot be undone!\n\n` +
+      `Type "${confirmText}" to confirm:`
+    )
+    
+    if (userInput === confirmText) {
+      purgeAllFiles(currentUser.id, currentProject.id)
+      alert('All documents have been deleted.')
+      setShowBulkActions(false)
+    }
+  }
+
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
@@ -139,10 +171,29 @@ export default function DocumentsPage() {
               Filter
             </Button>
 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBulkActions(!showBulkActions)}
+            >
+              {showBulkActions ? 'Cancel Selection' : 'Select Files'}
+            </Button>
+
             <Button onClick={() => setShowUpload(!showUpload)}>
               <Upload className="h-4 w-4 mr-2" />
               Upload
             </Button>
+
+            {files.length > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handlePurgeAllDocuments}
+              >
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Purge All
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -174,6 +225,9 @@ export default function DocumentsPage() {
               onFileSelect={setSelectedFile}
               onFileVisibilityChange={updateFileVisibility}
               onFileDownload={(fileId) => currentUser && currentProject && downloadFile(currentUser.id, currentProject.id, fileId)}
+              onFileDelete={(fileId) => currentUser && currentProject && deleteFile(currentUser.id, currentProject.id, fileId)}
+              onBulkDelete={handleBulkDelete}
+              showBulkActions={showBulkActions}
             />
           </div>
         </div>

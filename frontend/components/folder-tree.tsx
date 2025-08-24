@@ -24,6 +24,7 @@ interface FolderNodeProps {
   onToggle: () => void
   onSelect: () => void
   fileCount: number // Added file count prop
+  hasChildren: boolean // Added hasChildren prop
   children?: React.ReactNode
 }
 
@@ -35,9 +36,9 @@ function FolderNode({
   onToggle,
   onSelect,
   fileCount,
+  hasChildren,
   children,
 }: FolderNodeProps) {
-  const hasChildren = children !== undefined
 
   const getVisibilityBadge = (visibleTo: string[] | "All") => {
     if (visibleTo === "All") {
@@ -168,6 +169,7 @@ export function FolderTree({ folders, files, onFolderSelect, selectedFolderId }:
             onToggle={() => toggleFolder(folder.id)}
             onSelect={() => onFolderSelect(folder.id)}
             fileCount={fileCount}
+            hasChildren={hasChildren}
           >
             {hasChildren && isExpanded ? buildTree(folder.id, level + 1) : undefined}
           </FolderNode>

@@ -152,6 +152,8 @@ interface AppState {
   getProjectFiles: (userId: string, projectId: string) => File[]
   loadProjectFiles: (userId: string, projectId: string) => void
   deleteFile: (userId: string, projectId: string, fileId: string) => void
+  bulkDeleteFiles: (userId: string, projectId: string, fileIds: string[]) => void
+  purgeAllFiles: (userId: string, projectId: string) => void
   downloadFile: (userId: string, projectId: string, fileId: string) => void
   updateFileVisibility: (fileId: string, visibleTo: string[] | "All") => void
   updateQuestionCategory: (questionId: string, category: string, subcategory: string) => void
@@ -211,6 +213,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   deleteFile: (userId, projectId, fileId) => {
     FileStorageManager.deleteFile(userId, projectId, fileId)
     set((state) => ({ files: state.files.filter(f => f.id !== fileId) }))
+  },
+  bulkDeleteFiles: (userId, projectId, fileIds) => {
+    FileStorageManager.bulkDeleteFiles(userId, projectId, fileIds)
+    set((state) => ({ files: state.files.filter(f => !fileIds.includes(f.id)) }))
+  },
+  purgeAllFiles: (userId, projectId) => {
+    FileStorageManager.purgeAllFiles(userId, projectId)
+    set({ files: [] })
   },
   downloadFile: (userId, projectId, fileId) => {
     FileStorageManager.downloadFile(userId, projectId, fileId)
