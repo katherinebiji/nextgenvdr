@@ -179,6 +179,12 @@ class ApiService {
     })
   }
 
+  async deleteQuestion(questionId: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/questions/${questionId}`, {
+      method: 'DELETE',
+    })
+  }
+
   // AI and RAG Endpoints
   async analyzeDocument(documentId: string): Promise<ApiResponse<any>> {
     return this.makeRequest('/ai/analyze-document', {

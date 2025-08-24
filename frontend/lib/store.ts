@@ -206,6 +206,7 @@ interface AppState {
   uploadQuestionsText: (text: string) => Promise<boolean>
   uploadQuestionsFiles: (files: File[]) => Promise<boolean>
   loadQuestionsFromBackend: () => Promise<void>
+  deleteQuestion: (questionId: string) => Promise<boolean>
   purgeAllFiles: (userId: string, projectId: string) => Promise<void>
 }
 
@@ -561,6 +562,28 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     } catch (error) {
       console.error("Failed to load questions from backend:", error)
+    }
+  },
+  deleteQuestion: async (questionId) => {
+    try {
+      console.log("Attempting to delete question:", questionId)
+      const response = await apiService.deleteQuestion(questionId)
+      console.log("Delete response:", response)
+      if (response.success) {
+        set((state) => {
+          const newItems = state.qaTrackingItems.filter(q => q.id !== questionId)
+          console.log("Updated qaTrackingItems:", newItems.length, "items remaining")
+          return {
+            qaTrackingItems: newItems
+          }
+        })
+        return true
+      }
+      console.error("API delete failed:", response.error)
+      return false
+    } catch (error) {
+      console.error("Failed to delete question:", error)
+      return false
     }
   },
   purgeAllFiles: async (userId, projectId) => {

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MessageSquare, Search, Filter, ArrowUpDown, ExternalLink, WrapText, Edit, FileText } from "lucide-react"
+import { MessageSquare, Search, Filter, ArrowUpDown, ExternalLink, WrapText, Edit, FileText, Trash2 } from "lucide-react"
 import { QAProgressBar } from "@/components/qa-progress-bar"
 import { AnswerCollapsible } from "@/components/answer-collapsible"
 import { cn } from "@/lib/utils"
@@ -25,6 +25,7 @@ interface QATrackingTableProps {
   onPriorityChange?: (itemId: string, newPriority: "High" | "Medium" | "Low") => void
   onGenerateAnswer?: (questionId: string) => Promise<void>
   onViewDocument?: (documentId: string, highlights?: any[]) => void
+  onDeleteQuestion?: (questionId: string) => void
   generatingAnswers?: Set<string>
 }
 
@@ -36,6 +37,7 @@ export function QATrackingTable({
   onPriorityChange,
   onGenerateAnswer,
   onViewDocument,
+  onDeleteQuestion,
   generatingAnswers = new Set(),
 }: QATrackingTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
@@ -417,7 +419,23 @@ export function QATrackingTable({
                           className={wordWrapEnabled ? "whitespace-normal break-words" : "truncate"}
                           title={item.question}
                         >
-                          <span className="font-medium">{item.question}</span>
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-medium">{item.question}</span>
+                            {isBuySide && onDeleteQuestion && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 opacity-50 hover:opacity-100 hover:text-destructive flex-shrink-0"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onDeleteQuestion(item.id)
+                                }}
+                                title="Delete question"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
                           {hasAnswer && (
                             <div className="flex items-center gap-1 mt-1">
                               <Badge 

@@ -18,7 +18,7 @@ export default function QATrackingPage() {
   const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(null)
   const [previewHighlights, setPreviewHighlights] = useState<any[]>([])
   
-  const { generateAnswerForQuestion, setQATrackingItems, loadQuestionsFromBackend, qaTrackingItems } = useAppStore()
+  const { generateAnswerForQuestion, setQATrackingItems, loadQuestionsFromBackend, qaTrackingItems, deleteQuestion } = useAppStore()
 
   const isBuySide = projectId === "project-valley"
 
@@ -69,6 +69,18 @@ export default function QATrackingPage() {
     setPreviewHighlights(highlights || [])
   }
 
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (confirm("Are you sure you want to delete this question?")) {
+      const success = await deleteQuestion(questionId)
+      if (success) {
+        console.log("Question deleted successfully")
+      } else {
+        console.error("Failed to delete question")
+        alert("Failed to delete question. Please try again.")
+      }
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
@@ -100,6 +112,7 @@ export default function QATrackingPage() {
           onPriorityChange={handlePriorityChange}
           onGenerateAnswer={handleGenerateAnswer}
           onViewDocument={handleViewDocument}
+          onDeleteQuestion={isBuySide ? handleDeleteQuestion : undefined}
           generatingAnswers={generatingAnswers}
         />
       </div>

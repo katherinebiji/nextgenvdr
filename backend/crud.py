@@ -149,3 +149,11 @@ def update_question_status(db: Session, question_id: str, status: str) -> Option
         db.commit()
         db.refresh(question)
     return question
+
+def delete_question(db: Session, question_id: str) -> bool:
+    question = get_question(db, question_id)
+    if question:
+        db.delete(question)
+        db.commit()
+        return True
+    return False
