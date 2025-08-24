@@ -11,32 +11,25 @@
 
 ### Backend Setup
 
-1. **Navigate to project root**
+1. **Navigate to backend directory**
    ```bash
-   cd nextgenvdr
+   cd backend
    ```
 
-2. **Create and activate virtual environment**
+2. **Install dependencies with uv**
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   uv sync
    ```
 
-3. **Install backend dependencies**
+3. **Set up environment variables**
    ```bash
-   pip install -r backend/requirements.txt
-   ```
-
-4. **Set up environment variables**
-   ```bash
-   cp .env.example .env
+   cp ../.env.example ../.env
    # Edit .env with your OpenAI API key and other configurations
    ```
 
-5. **Start the FastAPI backend server**
+4. **Start the FastAPI backend server**
    ```bash
-   cd backend
-   python start.py
+   uv run python start.py
    ```
 
    The backend API will be available at `http://localhost:8000`
