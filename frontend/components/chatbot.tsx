@@ -1,0 +1,320 @@
+"use client"
+
+import { useState, useRef, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { MessageCircle, X, Send, Loader2 } from "lucide-react"
+
+interface Message {
+  id: string
+  text: string
+  isBot: boolean
+  timestamp: Date
+}
+
+export function Chatbot() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      text: "Hi! I'm your AI assistant. How can I help you with your Q&A tracking?",
+      isBot: true,
+      timestamp: new Date()
+    }
+  ])
+  const [inputValue, setInputValue] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Toggle between mock and real API - change this to false to use localhost
+  const useMockAPI = true
+
+  const sendMockResponse = async (message: string, onChunk: (chunk: string) => void) => {
+    // Mock streaming responses based on user input
+    const mockResponses = [
+      "I'd be happy to help you with your Q&A tracking! Based on your message, I can assist with organizing your due diligence questions, tracking response status, and managing document requests. What specific aspect would you like to focus on?",
+      "Great question! For Q&A tracking in virtual data rooms, I recommend categorizing questions by topic (legal, financial, operational, etc.), setting priority levels, and establishing clear timelines for responses. Would you like me to explain any of these areas in more detail?",
+      "I can help you streamline your Q&A process. This typically involves creating standardized question templates, setting up automated reminders for pending responses, and maintaining clear audit trails. What's your current biggest challenge with Q&A management?",
+      "Virtual data room Q&A tracking is crucial for successful due diligence. I can guide you through best practices like maintaining response logs, ensuring proper document indexing, and managing stakeholder communications. What would be most helpful for your current process?"
+    ]
+
+    // Select a random response (like localhost would return varied responses)
+    const responseText = mockResponses[Math.floor(Math.random() * mockResponses.length)]
+
+    // Simulate SSE streaming with proper chunks like localhost would
+    return new Promise<void>((resolve, reject) => {
+      // Split into realistic chunks (1-4 words per chunk like real streaming)
+      const words = responseText.split(' ')
+      const chunks: string[] = []
+      
+      for (let i = 0; i < words.length; i += Math.floor(Math.random() * 3) + 1) {
+        const chunkWords = words.slice(i, i + Math.floor(Math.random() * 3) + 1)
+        chunks.push(chunkWords.join(' ') + (i + chunkWords.length < words.length ? ' ' : ''))
+      }
+
+      let chunkIndex = 0
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Mock request timeout'))
+      }, 30000) // 30 second timeout like real requests
+
+      const sendNextChunk = () => {
+        if (chunkIndex >= chunks.length) {
+          clearTimeout(timeoutId)
+          resolve()
+          return
+        }
+
+        try {
+          // Simulate network delay variability (20-200ms like real streaming)
+          const delay = Math.random() * 180 + 20
+          
+          setTimeout(() => {
+            if (chunkIndex < chunks.length) {
+              onChunk(chunks[chunkIndex])
+              chunkIndex++
+              sendNextChunk()
+            }
+          }, delay)
+        } catch (error) {
+          clearTimeout(timeoutId)
+          reject(error)
+        }
+      }
+
+      // Initial delay to simulate connection time
+      setTimeout(() => {
+        sendNextChunk()
+      }, Math.random() * 200 + 100)
+    })
+  }
+
+  const sendLocalhostRequest = async (message: string, onChunk: (chunk: string) => void) => {
+    try {
+      const response = await fetch('http://localhost:8000/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message, stream: true }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('No reader available')
+      }
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          const trimmedLine = line.trim()
+          if (trimmedLine.startsWith('data: ')) {
+            const data = trimmedLine.slice(6)
+            if (data === '[DONE]') {
+              return
+            }
+            try {
+              const parsed = JSON.parse(data)
+              const chunk = parsed.content || parsed.text || parsed.delta || ''
+              if (chunk) {
+                onChunk(chunk)
+              }
+            } catch (e) {
+              // If not JSON, treat as plain text chunk
+              if (data) {
+                onChunk(data)
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Chat API error:', error)
+      throw error
+    }
+  }
+
+  const sendChatMessage = async (message: string, onChunk: (chunk: string) => void) => {
+    try {
+      if (useMockAPI) {
+        await sendMockResponse(message, onChunk)
+      } else {
+        await sendLocalhostRequest(message, onChunk)
+      }
+    } catch (error) {
+      console.error('Chat message error:', error)
+      onChunk("I'm having trouble connecting to the chat service. Please try again later.")
+    }
+  }
+
+  const handleSend = async () => {
+    if (!inputValue.trim() || isLoading) return
+
+    const messageText = inputValue
+    setInputValue("")
+    setIsLoading(true)
+
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: messageText,
+      isBot: false,
+      timestamp: new Date()
+    }
+
+    setMessages(prev => [...prev, userMessage])
+
+    // Create initial bot message for streaming
+    const botMessageId = (Date.now() + 1).toString()
+    const initialBotMessage: Message = {
+      id: botMessageId,
+      text: "",
+      isBot: true,
+      timestamp: new Date()
+    }
+
+    setMessages(prev => [...prev, initialBotMessage])
+
+    // Handle streaming response
+    try {
+      await sendChatMessage(messageText, (chunk: string) => {
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === botMessageId 
+              ? { ...msg, text: msg.text + chunk }
+              : msg
+          )
+        )
+      })
+    } catch (error) {
+      console.error('Error sending message:', error)
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === botMessageId 
+            ? { ...msg, text: "Sorry, I encountered an error. Please try again." }
+            : msg
+        )
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, 100)
+  }, [messages])
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      {/* Chat Toggle Button */}
+      {!isOpen && (
+        <Button
+          onClick={() => setIsOpen(true)}
+          size="lg"
+          className="rounded-full h-14 w-14 shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+      )}
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div className="w-96 h-[500px] shadow-lg border rounded-lg overflow-hidden bg-white">
+          <div className="flex flex-row items-center justify-between px-3 py-1.5 border-b rounded-t-lg" style={{ backgroundColor: '#9333ea' }}>
+            <h3 className="text-xs font-medium text-white">AI Assistant</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+              className="h-6 w-6 p-0 hover:bg-purple-700 text-white"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+          <div className="flex flex-col h-[calc(100%-36px)]">
+            {/* Messages */}
+            <div className="flex-1 overflow-auto p-4">
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.isBot ? "justify-start" : "justify-end"}`}
+                  >
+                    <div
+                      className={`max-w-[85%] p-3 rounded-lg text-sm leading-relaxed break-words whitespace-pre-wrap ${
+                        message.isBot
+                          ? "bg-muted text-foreground"
+                          : "bg-primary text-primary-foreground"
+                      }`}
+                    >
+                      {message.text}
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted text-foreground p-3 rounded-lg text-sm leading-relaxed flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Thinking...
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Input Area - Fixed at bottom */}
+            <div className="border-t p-4 bg-background mt-auto">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type your message..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1 min-h-[40px]"
+                />
+                <Button 
+                  onClick={handleSend} 
+                  size="sm"
+                  className="px-3 py-2 min-h-[40px]"
+                  disabled={!inputValue.trim() || isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
