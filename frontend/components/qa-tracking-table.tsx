@@ -12,29 +12,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MessageSquare, Search, Filter, ArrowUpDown, ExternalLink, WrapText, Edit } from "lucide-react"
 import { QAProgressBar } from "@/components/qa-progress-bar"
+import { AnswerCollapsible } from "@/components/answer-collapsible"
 import { cn } from "@/lib/utils"
+import type { QATrackingItem } from "@/lib/store"
 
-interface QATrackingItem {
-  id: string
-  question: string
-  buyerId: string
-  status: "Complete" | "In Progress" | "Open"
-  team: string
-  category: string
-  subcategory: string
-  priority: "High" | "Medium" | "Low"
-  dueDate: string
-  reviewedByBank: "Yes" | "In Progress" | "Not Started"
-  description: string
-  linkedFiles: string[]
-  submittedDate: string
-  history: Array<{
-    date: string
-    action: string
-    user: string
-    note: string
-  }>
-}
 
 interface QATrackingTableProps {
   items: QATrackingItem[]
@@ -42,6 +23,9 @@ interface QATrackingTableProps {
   selectedItemId?: string | null
   isBuySide?: boolean
   onPriorityChange?: (itemId: string, newPriority: "High" | "Medium" | "Low") => void
+  onGenerateAnswer?: (questionId: string) => Promise<void>
+  onViewDocument?: (documentId: string, highlights?: any[]) => void
+  generatingAnswers?: Set<string>
 }
 
 export function QATrackingTable({
@@ -50,6 +34,9 @@ export function QATrackingTable({
   selectedItemId,
   isBuySide = false,
   onPriorityChange,
+  onGenerateAnswer,
+  onViewDocument,
+  generatingAnswers = new Set(),
 }: QATrackingTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("All")
@@ -371,7 +358,7 @@ export function QATrackingTable({
                   <ArrowUpDown className="ml-2 h-3 w-3" />
                 </Button>
               </TableHead>
-              <TableHead>Source</TableHead>
+              <TableHead>Answer</TableHead>
               <TableHead>
                 <Button
                   variant="ghost"
@@ -417,20 +404,13 @@ export function QATrackingTable({
                     {item.category}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  {item.status === "Complete" && item.linkedFiles.length > 0 ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-auto p-1 text-primary hover:text-primary/80"
-                      onClick={(e) => handleSourceClick(e, item.linkedFiles)}
-                    >
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      View Source
-                    </Button>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">-</span>
-                  )}
+                <TableCell className="max-w-md">
+                  <AnswerCollapsible
+                    question={item}
+                    onViewDocument={onViewDocument}
+                    onGenerateAnswer={onGenerateAnswer}
+                    isGenerating={generatingAnswers.has(item.id)}
+                  />
                 </TableCell>
                 <TableCell>{getPriorityBadge(item.priority, item.id)}</TableCell>
               </TableRow>

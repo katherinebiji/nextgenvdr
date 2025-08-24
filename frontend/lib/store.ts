@@ -66,6 +66,40 @@ export interface Question {
   linkedFiles?: string[]
 }
 
+export interface QATrackingItem {
+  id: string
+  question: string
+  buyerId: string
+  status: "Complete" | "In Progress" | "Open"
+  team: string
+  category: string
+  subcategory: string
+  priority: "High" | "Medium" | "Low"
+  dueDate: string
+  reviewedByBank: "Yes" | "In Progress" | "Not Started"
+  description: string
+  linkedFiles: string[]
+  submittedDate: string
+  history: Array<{
+    date: string
+    action: string
+    user: string
+    note: string
+  }>
+  answer?: string
+  answerSources?: Array<{
+    document_id: string
+    document_name: string
+    chunk_index: number
+    start_position: number
+    end_position: number
+    content: string
+    similarity_score: number
+  }>
+  answeredDate?: string
+  answeredBy?: string
+}
+
 export interface TrackerItem {
   id: string
   indexLink: string
@@ -138,6 +172,7 @@ interface AppState {
   showRelevancePanel: boolean
   currentRelevance: RelevanceSuggestion | null
   buyerFilter: string
+  qaTrackingItems: QATrackingItem[]
   setCurrentUser: (user: User) => void
   setCurrentProject: (project: Project) => void
   setSelectedQuestion: (questionId: string | null) => void
@@ -165,6 +200,9 @@ interface AppState {
   removeUser: (userId: string) => void
   updateUserFolderPermissions: (userId: string, folderIds: string[]) => void
   updateSettings: (newSettings: Partial<Settings>) => void
+  generateAnswerForQuestion: (questionId: string) => Promise<void>
+  updateQuestionAnswer: (questionId: string, answer: string, sources: QATrackingItem["answerSources"], answeredBy: string) => void
+  setQATrackingItems: (items: QATrackingItem[]) => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -190,6 +228,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   showRelevancePanel: false,
   currentRelevance: null,
   buyerFilter: "All",
+  qaTrackingItems: [],
   setCurrentUser: (user) => set({ currentUser: user }),
   setCurrentProject: (project) => set({ currentProject: project }),
   setSelectedQuestion: (questionId) => set({ selectedQuestion: questionId }),
@@ -355,4 +394,38 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({
       settings: { ...state.settings, ...newSettings },
     })),
+  generateAnswerForQuestion: async (questionId) => {
+    const state = get()
+    const question = state.qaTrackingItems.find(q => q.id === questionId)
+    if (!question || question.status !== "Complete") return
+
+    try {
+      const response = await state.ragChat(question.question)
+      if (response.response && response.sources) {
+        state.updateQuestionAnswer(
+          questionId,
+          response.response,
+          response.sources,
+          state.currentUser?.name || "System"
+        )
+      }
+    } catch (error) {
+      console.error("Failed to generate answer:", error)
+    }
+  },
+  updateQuestionAnswer: (questionId, answer, sources, answeredBy) =>
+    set((state) => ({
+      qaTrackingItems: state.qaTrackingItems.map((q) =>
+        q.id === questionId
+          ? {
+              ...q,
+              answer,
+              answerSources: sources,
+              answeredDate: new Date().toISOString(),
+              answeredBy,
+            }
+          : q
+      ),
+    })),
+  setQATrackingItems: (items) => set({ qaTrackingItems: items }),
 }))
