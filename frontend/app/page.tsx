@@ -2,25 +2,105 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { GlowCard } from "@/components/ui/spotlight-card"
-import { Mail, Lock, User } from "lucide-react"
+import { Mail, Lock, User, MoveRight, Shield, Zap } from "lucide-react"
 import apiService from "@/lib/api"
+import { motion } from "framer-motion"
 
 // NextGen VDR Logo Component
 function NextGenVDRLogo() {
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex justify-center mb-6">
       <img 
         src="/logo!!!.png" 
         alt="NextGen VDR Logo" 
-        className="h-50 w-auto"
+        className="h-16 w-auto"
       />
     </div>
   )
+}
+
+// Rotating Message Hero Component
+function RotatingMessageHero() {
+  const [titleNumber, setTitleNumber] = useState(0);
+  const titles = useMemo(
+    () => ["intelligent", "secure", "efficient", "powerful", "innovative"],
+    []
+  );
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (titleNumber === titles.length - 1) {
+        setTitleNumber(0);
+      } else {
+        setTitleNumber(titleNumber + 1);
+      }
+    }, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [titleNumber, titles]);
+
+  return (
+    <div className="w-full">
+      <div className="container mx-auto">
+        <div className="flex gap-6 py-12 items-center justify-center flex-col">
+          <div>
+            <Button variant="secondary" size="sm" className="gap-2">
+              <Shield className="w-4 h-4" />
+              Enterprise-grade security
+            </Button>
+          </div>
+          <div className="flex gap-4 flex-col">
+            <h2 className="text-3xl md:text-4xl max-w-2xl tracking-tighter text-center font-regular">
+              <span className="text-purple-400">NextGenVDR is</span>
+              <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-4 md:pt-1">
+                &nbsp;
+                {titles.map((title, index) => (
+                  <motion.span
+                    key={index}
+                    className="absolute font-semibold text-purple-300"
+                    initial={{ opacity: 0, y: "-100" }}
+                    transition={{ type: "spring", stiffness: 50 }}
+                    animate={
+                      titleNumber === index
+                        ? {
+                            y: 0,
+                            opacity: 1,
+                          }
+                        : {
+                            y: titleNumber > index ? -150 : 150,
+                            opacity: 0,
+                          }
+                    }
+                  >
+                    {title}
+                  </motion.span>
+                ))}
+              </span>
+            </h2>
+
+            <p className="text-base md:text-lg leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center">
+              Transform your due diligence process with AI-powered document analysis, 
+              intelligent Q&A workflows, and secure collaboration tools designed for 
+              modern M&A transactions.
+            </p>
+          </div>
+          <div className="flex flex-row gap-3">
+            <Button size="sm" className="gap-2" variant="outline">
+              <Zap className="w-4 h-4" />
+              Learn more
+            </Button>
+            <Button size="sm" className="gap-2">
+              Get started <MoveRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function LoginPage() {
@@ -64,9 +144,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-sm space-y-6">
         {/* Logo and Header */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3">
           <div className="flex justify-center">
             <NextGenVDRLogo />
           </div>
@@ -74,6 +154,9 @@ export default function LoginPage() {
             <p className="text-muted-foreground">Deal documents made easy with AI</p>
           </div>
         </div>
+
+        {/* Rotating Message Hero */}
+        <RotatingMessageHero />
 
         {/* Login/Register Form */}
         <GlowCard 
@@ -83,12 +166,12 @@ export default function LoginPage() {
           glowColor="purple" 
           className="border-purple-500/30 shadow-2xl bg-black/90 backdrop-blur-md hover:border-purple-400/50"
         >
-          <div className="p-6">
-            <div className="space-y-1 mb-6">
-              <h2 className="text-2xl font-semibold text-foreground">
+          <div className="p-5">
+            <div className="space-y-1 mb-5">
+              <h2 className="text-xl font-semibold text-foreground">
                 {isLogin ? "Sign in" : "Create Account"}
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {isLogin ? "Enter your credentials to access your data rooms" : "Register for NextGenVDR access"}
               </p>
             </div>
@@ -183,10 +266,8 @@ export default function LoginPage() {
           </div>
         </GlowCard>
 
-        
-
         {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground mt-8">
+        <div className="text-center text-sm text-muted-foreground mt-6">
           <p>Secure • Compliant • Trusted</p>
         </div>
       </div>
