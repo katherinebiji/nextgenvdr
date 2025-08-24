@@ -1,6 +1,7 @@
 CLAUDE.md
 .claude
 .venv/
+.playwright-mcp
 
 # Python
 .venv/
@@ -28,6 +29,11 @@ ENV/
 *.db
 *.sqlite
 *.sqlite3
+
+# Vector store files
+*.pkl
+*.faiss
+vector_store/
 
 # IDE
 .vscode/
