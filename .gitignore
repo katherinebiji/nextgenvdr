@@ -30,6 +30,11 @@ ENV/
 *.sqlite
 *.sqlite3
 
+# Vector store files
+*.pkl
+*.faiss
+vector_store/
+
 # IDE
 .vscode/
 .idea/
