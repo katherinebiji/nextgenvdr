@@ -9,6 +9,7 @@ import { GlowCard } from "@/components/ui/spotlight-card"
 import { Mail, Lock, User, MoveRight, Shield, Zap } from "lucide-react"
 import apiService from "@/lib/api"
 import { motion } from "framer-motion"
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
 
 
 
@@ -53,8 +54,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Grid Pattern Background */}
+      <AnimatedGridPattern
+        numSquares={30}
+        maxOpacity={0.1}
+        duration={5}
+        repeatDelay={1}
+        className="[mask-image:radial-gradient(600px_circle_at_center,white,transparent)] inset-x-0 inset-y-[-30%] h-[160%] skew-y-12"
+      />
+      
+      <div className="w-full max-w-sm space-y-6 relative z-10">
         {/* Logo and Header */}
         <div className="text-center space-y-3">
           <div className="flex justify-center mb-6">
