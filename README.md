@@ -2,6 +2,11 @@
 
 NextGenVDR is a modern Virtual Data Room (VDR) platform that revolutionizes due diligence processes through AI automation. Built for M&A transactions, fundraising, and other confidential document sharing scenarios, it combines secure document management with intelligent AI-powered analysis.
 
+## Demo
+
+![NextGenVDR Q&A Tracking Interface](media/Screenshot%202025-08-24%20at%2011.50.00.png)
+
+
 ## 🎯 What It Achieves
 
 **Core Mission**: Transform traditional due diligence from a manual, time-intensive process into an intelligent, automated workflow that accelerates deal completion while maintaining security and compliance.
