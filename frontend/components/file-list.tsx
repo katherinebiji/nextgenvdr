@@ -12,9 +12,10 @@ interface FileListProps {
   selectedFileId?: string | null
   onFileSelect: (fileId: string) => void
   onFileVisibilityChange: (fileId: string, visibleTo: string[] | "All") => void
+  onFileDownload?: (fileId: string) => void
 }
 
-export function FileList({ files, selectedFileId, onFileSelect, onFileVisibilityChange }: FileListProps) {
+export function FileList({ files, selectedFileId, onFileSelect, onFileVisibilityChange, onFileDownload }: FileListProps) {
   const formatFileSize = (bytes: number) => {
     const sizes = ["B", "KB", "MB", "GB"]
     if (bytes === 0) return "0 B"
@@ -138,7 +139,7 @@ export function FileList({ files, selectedFileId, onFileSelect, onFileVisibility
                       <Eye className="h-4 w-4 mr-2" />
                       Preview
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onFileDownload?.(file.id)}>
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </DropdownMenuItem>

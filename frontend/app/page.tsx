@@ -8,14 +8,12 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Building2, Mail, Lock, User } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import apiService from "@/lib/api"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
-  const [role, setRole] = useState("")
   const [isLogin, setIsLogin] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -27,14 +25,14 @@ export default function LoginPage() {
 
     try {
       if (isLogin) {
-        const response = await apiService.login(email, password, name || "User", role || "buyer")
+        const response = await apiService.login(email, password, name || "User", "buyer")
         if (response.success) {
           window.location.href = "/projects"
         } else {
           setError(response.error || "Login failed")
         }
       } else {
-        const response = await apiService.register(email, password, name, role)
+        const response = await apiService.register(email, password, name, "buyer")
         if (response.success) {
           setError("")
           setIsLogin(true)
@@ -135,20 +133,8 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select value={role} onValueChange={setRole} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="buyer">Buyer</SelectItem>
-                    <SelectItem value="seller">Seller</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !email || !password || (!isLogin && !name) || !role}>
+              <Button type="submit" className="w-full" disabled={isLoading || !email || !password || (!isLogin && !name)}>
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />

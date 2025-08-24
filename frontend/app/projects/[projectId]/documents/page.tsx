@@ -12,7 +12,7 @@ import { UploadDropzone } from "@/components/upload-dropzone"
 import { RelevancePanel } from "@/components/relevance-panel"
 import { BreadcrumbNav } from "@/components/breadcrumb-nav"
 import { useAppStore } from "@/lib/store"
-import { mockFolders, mockFiles, mockQuestions } from "@/lib/mock-data"
+import { mockFolders, mockQuestions } from "@/lib/mock-data"
 
 export default function DocumentsPage() {
   const params = useParams()
@@ -22,6 +22,9 @@ export default function DocumentsPage() {
     showRelevancePanel,
     currentRelevance,
     buyerFilter,
+    currentUser,
+    currentProject,
+    files,
     setSelectedFolder,
     setSelectedFile,
     setShowRelevancePanel,
@@ -29,18 +32,23 @@ export default function DocumentsPage() {
     setBuyerFilter,
     addFile,
     updateFileVisibility,
+    loadProjectFiles,
+    downloadFile,
   } = useAppStore()
 
   const [searchQuery, setSearchQuery] = useState("")
   const [showUpload, setShowUpload] = useState(false)
 
-  // Initialize mock data
+  // Load files from storage
   useEffect(() => {
-    // In a real app, this would fetch data based on projectId
-  }, [params.projectId])
+    if (currentUser && currentProject) {
+      loadProjectFiles(currentUser.id, currentProject.id)
+    }
+  }, [params.projectId, currentUser, currentProject, loadProjectFiles])
 
   const currentFolder = mockFolders.find((f) => f.id === selectedFolder)
-  const filteredFiles = mockFiles.filter((file) => {
+  
+  const filteredFiles = files.filter((file) => {
     const matchesFolder = !selectedFolder || file.folderId === selectedFolder
     const matchesSearch = !searchQuery || file.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesBuyer =
@@ -145,7 +153,7 @@ export default function DocumentsPage() {
         <div className="w-80 border-r border-border bg-card">
           <FolderTree
             folders={mockFolders}
-            files={mockFiles}
+            files={files}
             onFolderSelect={setSelectedFolder}
             selectedFolderId={selectedFolder}
           />
@@ -165,6 +173,7 @@ export default function DocumentsPage() {
               selectedFileId={selectedFile}
               onFileSelect={setSelectedFile}
               onFileVisibilityChange={updateFileVisibility}
+              onFileDownload={(fileId) => currentUser && currentProject && downloadFile(currentUser.id, currentProject.id, fileId)}
             />
           </div>
         </div>

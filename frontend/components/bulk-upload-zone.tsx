@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { useAppStore } from "@/lib/store"
+import type { File as StoreFile } from "@/lib/store"
 
 interface UploadFile {
   id: string
@@ -19,6 +21,7 @@ interface UploadFile {
   status: "pending" | "uploading" | "completed" | "error"
   progress: number
   folder?: string
+  content?: ArrayBuffer
   aiSuggestion?: {
     folder: string
     confidence: number
@@ -42,6 +45,15 @@ const folders = [
   "IP",
   "IT",
 ]
+
+const folderIdMap: Record<string, string> = {
+  "Legal": "legal",
+  "Commercial": "commercial", 
+  "Financial": "financial",
+  "HR": "hr",
+  "IP": "ip",
+  "IT": "it",
+}
 
 const getAISuggestion = (fileName: string) => {
   const name = fileName.toLowerCase()
@@ -76,6 +88,8 @@ export function BulkUploadZone() {
   const [showPreview, setShowPreview] = useState(false)
   const [filePreviews, setFilePreviews] = useState<FilePreview[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const { currentUser, currentProject, addFileWithContent } = useAppStore()
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -108,20 +122,45 @@ export function BulkUploadZone() {
     [folderMode],
   )
 
-  const addFiles = (newFiles: File[]) => {
-    const uploadFiles: UploadFile[] = newFiles.map((file) => {
+  const addFiles = async (newFiles: File[]) => {
+    const uploadFiles: UploadFile[] = []
+    
+    for (const file of newFiles) {
       const aiSuggestion = getAISuggestion(file.name)
-
-      return {
-        id: Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        size: file.size,
-        status: "pending",
-        progress: 0,
-        folder: folderMode === "ai" ? aiSuggestion.folder : defaultFolder || undefined,
-        aiSuggestion: aiSuggestion,
+      
+      try {
+        // Read file content
+        const content = await file.arrayBuffer()
+        
+        const uploadFile: UploadFile = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: file.name,
+          size: file.size,
+          status: "pending",
+          progress: 0,
+          folder: folderMode === "ai" ? aiSuggestion.folder : defaultFolder || undefined,
+          content: content,
+          aiSuggestion: aiSuggestion,
+        }
+        
+        uploadFiles.push(uploadFile)
+      } catch (error) {
+        console.error(`Failed to read file ${file.name}:`, error)
+        
+        const uploadFile: UploadFile = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: file.name,
+          size: file.size,
+          status: "error",
+          progress: 0,
+          folder: folderMode === "ai" ? aiSuggestion.folder : defaultFolder || undefined,
+          aiSuggestion: aiSuggestion,
+          error: "Failed to read file",
+        }
+        
+        uploadFiles.push(uploadFile)
       }
-    })
+    }
 
     setFiles((prev) => [...prev, ...uploadFiles])
   }
@@ -134,70 +173,69 @@ export function BulkUploadZone() {
     setFiles((prev) => prev.map((file) => (file.id === id ? { ...file, folder } : file)))
   }
 
-  const startUpload = () => {
-    if (folderMode === "ai") {
-      files.forEach((file, index) => {
-        if (file.status === "pending") {
-          setTimeout(() => {
-            setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, status: "uploading" } : f)))
-
-            const interval = setInterval(() => {
-              setFiles((prev) =>
-                prev.map((f) => {
-                  if (f.id === file.id && f.status === "uploading") {
-                    const newProgress = Math.min(f.progress + 10, 100)
-                    if (newProgress === 100) {
-                      clearInterval(interval)
-                      return { ...f, progress: 100, status: "completed" }
-                    }
-                    return { ...f, progress: newProgress }
-                  }
-                  return f
-                }),
-              )
-            }, 200)
-          }, index * 500)
-        }
-      })
-
-      setTimeout(
-        () => {
-          const previews: FilePreview[] = files.map((file) => ({
-            id: file.id,
-            name: file.name,
-            folder: file.folder || "Operations",
-            accessUsers: getFolderAccessUsers(file.folder || "Operations"),
-          }))
-          setFilePreviews(previews)
-          setShowPreview(true)
-        },
-        files.length * 500 + 2000,
-      )
-    } else {
-      files.forEach((file, index) => {
-        if (file.status === "pending") {
-          setTimeout(() => {
-            setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, status: "uploading" } : f)))
-
-            const interval = setInterval(() => {
-              setFiles((prev) =>
-                prev.map((f) => {
-                  if (f.id === file.id && f.status === "uploading") {
-                    const newProgress = Math.min(f.progress + 10, 100)
-                    if (newProgress === 100) {
-                      clearInterval(interval)
-                      return { ...f, progress: 100, status: "completed" }
-                    }
-                    return { ...f, progress: newProgress }
-                  }
-                  return f
-                }),
-              )
-            }, 200)
-          }, index * 500)
-        }
-      })
+  const startUpload = async () => {
+    if (!currentUser || !currentProject) {
+      console.error("User or project not available")
+      return
     }
+
+    for (const [index, file] of files.entries()) {
+      if (file.status === "pending" && file.content && file.folder) {
+        setTimeout(async () => {
+          setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, status: "uploading" } : f)))
+
+          // Simulate upload progress
+          const interval = setInterval(async () => {
+            setFiles((prev) =>
+              prev.map((f) => {
+                if (f.id === file.id && f.status === "uploading") {
+                  const newProgress = Math.min(f.progress + 10, 100)
+                  if (newProgress === 100) {
+                    clearInterval(interval)
+                    
+                    // Actually store the file when upload completes
+                    if (f.content && currentUser && currentProject) {
+                      const storeFile: StoreFile = {
+                        id: f.id,
+                        name: f.name,
+                        path: `/${f.folder}/${f.name}`,
+                        folderId: folderIdMap[f.folder] || f.folder.toLowerCase().replace(/\s+/g, "-"),
+                        size: f.size,
+                        modified: new Date().toISOString(),
+                        version: "1.0",
+                        visibleTo: "All",
+                        type: f.name.split('.').pop()?.toLowerCase() || "unknown",
+                        uploadedBy: currentUser.name,
+                      }
+                      
+                      addFileWithContent(storeFile, f.content, currentUser.id, currentProject.id)
+                    }
+                    
+                    return { ...f, progress: 100, status: "completed" }
+                  }
+                  return { ...f, progress: newProgress }
+                }
+                return f
+              }),
+            )
+          }, 200)
+        }, index * 500)
+      }
+    }
+
+    // Show preview after all files are processed
+    setTimeout(() => {
+      const previews: FilePreview[] = files
+        .filter(f => f.status === "completed" || f.status === "pending")
+        .map((file) => ({
+          id: file.id,
+          name: file.name,
+          folder: file.folder || "Commercial",
+          accessUsers: getFolderAccessUsers(file.folder || "Commercial"),
+        }))
+      setFilePreviews(previews)
+      setShowPreview(true)
+    }, files.length * 500 + 2000)
   }
 
   const formatFileSize = (bytes: number) => {
