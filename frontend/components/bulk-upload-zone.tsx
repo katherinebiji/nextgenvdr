@@ -216,7 +216,21 @@ export function BulkUploadZone() {
       return
     }
 
-    for (const [index, file] of files.entries()) {
+    // Assign default folder for files without folders before processing
+    setFiles(prev => prev.map(f => 
+      f.status === "pending" && !f.folder 
+        ? { ...f, folder: "commercial-customers" } // Default fallback folder
+        : f
+    ))
+
+    // Get updated files list with folders assigned
+    const updatedFiles = files.map(f => 
+      f.status === "pending" && !f.folder 
+        ? { ...f, folder: "commercial-customers" }
+        : f
+    )
+
+    for (const [index, file] of updatedFiles.entries()) {
       if (file.status === "pending" && file.content && file.folder) {
         setTimeout(async () => {
           setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, status: "uploading" } : f)))
@@ -226,23 +240,26 @@ export function BulkUploadZone() {
             const success = await uploadFileToBackend(file.content!, [file.folder])
             
             if (success) {
-              // Get the uploaded document info to get the document ID
-              const response = await fetch('/api/documents/')
-              const documents = await response.json()
-              const uploadedDoc = documents.find((d: any) => d.name === file.name)
+              // Get the uploaded document info to get the document ID using the API service
+              const { apiService } = await import('@/lib/api')
+              const documentsResponse = await apiService.getDocuments()
               
-              if (uploadedDoc) {
-                // Start RAG processing asynchronously
-                processDocumentForRAG(uploadedDoc.id)
+              if (documentsResponse.success && documentsResponse.data) {
+                const uploadedDoc = documentsResponse.data.find((d: any) => d.name === file.name)
                 
-                setFiles((prev) => prev.map((f) => 
-                  f.id === file.id ? { 
-                    ...f, 
-                    status: "completed", 
-                    progress: 100,
-                    documentId: uploadedDoc.id 
-                  } : f
-                ))
+                if (uploadedDoc) {
+                  // Start RAG processing asynchronously
+                  processDocumentForRAG(uploadedDoc.id)
+                  
+                  setFiles((prev) => prev.map((f) => 
+                    f.id === file.id ? { 
+                      ...f, 
+                      status: "completed", 
+                      progress: 100,
+                      documentId: uploadedDoc.id 
+                    } : f
+                  ))
+                }
               }
             } else {
               setFiles((prev) => prev.map((f) => 
@@ -269,7 +286,7 @@ export function BulkUploadZone() {
 
     // Show preview after all files are processed
     setTimeout(() => {
-      const previews: FilePreview[] = files
+      const previews: FilePreview[] = updatedFiles
         .filter(f => f.status === "completed")
         .map((file) => ({
           id: file.documentId || file.id,
@@ -279,7 +296,7 @@ export function BulkUploadZone() {
         }))
       setFilePreviews(previews)
       setShowPreview(true)
-    }, files.length * 500 + 2000)
+    }, updatedFiles.length * 500 + 2000)
   }
 
   const formatFileSize = (bytes: number) => {

@@ -56,12 +56,15 @@ class ApiService {
         defaultHeaders['Authorization'] = `Bearer ${this.token}`
       }
 
+      // Handle FormData uploads by removing Content-Type when explicitly set to null
+      const finalHeaders = { ...defaultHeaders, ...options.headers }
+      if (options.headers && options.headers['Content-Type'] === null) {
+        delete finalHeaders['Content-Type']
+      }
+
       const config: RequestInit = {
         ...options,
-        headers: {
-          ...defaultHeaders,
-          ...options.headers,
-        },
+        headers: finalHeaders,
       }
 
       const response = await fetch(url, config)
@@ -126,7 +129,7 @@ class ApiService {
 
     const response = await this.makeRequest<DocumentUploadResponse>('/documents/upload', {
       method: 'POST',
-      headers: {}, // Remove Content-Type to let browser set it for FormData
+      headers: { 'Content-Type': null }, // Explicitly omit Content-Type for FormData
       body: formData,
     })
 
