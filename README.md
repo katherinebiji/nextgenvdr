@@ -113,7 +113,7 @@ TODO: Screenshot of APP
 5. **Start the FastAPI backend server**
    ```bash
    cd backend
-   python start.py
+   ../.venv/bin/python main.py
    ```
 
    The backend API will be available at `http://localhost:8000`
@@ -124,20 +124,43 @@ TODO: Screenshot of APP
 
 1. **Navigate to frontend directory**
    ```bash
-   cd "Virtual Data Room"
+   cd frontend
    ```
 
 2. **Install frontend dependencies**
    ```bash
-   pnpm i
+   pnpm install
    ```
 
 3. **Start the Next.js development server**
    ```bash
-   npx next dev
+   pnpm dev
    ```
 
    The frontend application will be available at `http://localhost:3000`
+
+**Path Aliases**: The project uses `@/*` path alias that maps to the frontend root directory, allowing imports like `@/components/ui/button` instead of relative paths.
+
+## 🚀 Quick Start
+
+To run both backend and frontend together:
+
+1. **Start the backend** (in terminal 1):
+   ```bash
+   cd backend
+   ../.venv/bin/python main.py
+   ```
+
+2. **Start the frontend** (in terminal 2):
+   ```bash
+   cd frontend
+   pnpm dev
+   ```
+
+3. **Access the application**:
+   - Frontend: `http://localhost:3000`
+   - Backend API: `http://localhost:8000`
+   - API Docs: `http://localhost:8000/docs`
 
 ### 🧠 AI-Powered Features
 
