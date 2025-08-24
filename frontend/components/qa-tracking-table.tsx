@@ -48,6 +48,7 @@ export function QATrackingTable({
   const [questionColumnWidth, setQuestionColumnWidth] = useState(300)
   const [isResizing, setIsResizing] = useState(false)
   const [editingPriority, setEditingPriority] = useState<string | null>(null)
+  const [expandedAnswers, setExpandedAnswers] = useState<Set<string>>(new Set())
   const resizeRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -358,7 +359,6 @@ export function QATrackingTable({
                   <ArrowUpDown className="ml-2 h-3 w-3" />
                 </Button>
               </TableHead>
-              <TableHead>Answer</TableHead>
               <TableHead>
                 <Button
                   variant="ghost"
@@ -373,48 +373,111 @@ export function QATrackingTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedItems.map((item) => (
-              <TableRow
-                key={item.id}
-                className={cn("cursor-pointer hover:bg-muted/50", selectedItemId === item.id && "bg-accent")}
-                onClick={() => onItemClick(item)}
-              >
-                <TableCell style={{ width: `${questionColumnWidth}px` }}>
-                  <div className="flex items-start gap-2">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <div
-                      className={wordWrapEnabled ? "whitespace-normal break-words" : "truncate"}
-                      title={item.question}
-                    >
-                      <span className="font-medium">{item.question}</span>
-                    </div>
-                  </div>
-                </TableCell>
-                {!isBuySide && (
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Building className="h-3 w-3 text-muted-foreground" />
-                      {formatBuyerId(item.buyerId)}
-                    </div>
-                  </TableCell>
-                )}
-                <TableCell>{getStatusBadge(item.status)}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-xs">
-                    {item.category}
-                  </Badge>
-                </TableCell>
-                <TableCell className="max-w-md">
-                  <AnswerCollapsible
-                    question={item}
-                    onViewDocument={onViewDocument}
-                    onGenerateAnswer={onGenerateAnswer}
-                    isGenerating={generatingAnswers.has(item.id)}
-                  />
-                </TableCell>
-                <TableCell>{getPriorityBadge(item.priority, item.id)}</TableCell>
-              </TableRow>
-            ))}
+            {sortedItems.map((item) => {
+              const isExpanded = expandedAnswers.has(item.id)
+              const hasAnswer = item.status === "Complete" && (item.answer || generatingAnswers.has(item.id))
+              
+              return (
+                <React.Fragment key={item.id}>
+                  <TableRow
+                    className={cn(
+                      "cursor-pointer hover:bg-muted/50", 
+                      selectedItemId === item.id && "bg-accent",
+                      hasAnswer && isExpanded && "border-b-0"
+                    )}
+                    onClick={() => {
+                      if (hasAnswer) {
+                        setExpandedAnswers(prev => {
+                          const newSet = new Set(prev)
+                          if (newSet.has(item.id)) {
+                            newSet.delete(item.id)
+                          } else {
+                            newSet.add(item.id)
+                          }
+                          return newSet
+                        })
+                      } else {
+                        onItemClick(item)
+                      }
+                    }}
+                  >
+                    <TableCell style={{ width: `${questionColumnWidth}px` }}>
+                      <div className="flex items-start gap-2">
+                        <div className="relative">
+                          <MessageSquare className={cn(
+                            "h-4 w-4 mt-0.5 flex-shrink-0",
+                            hasAnswer ? "text-secondary" : "text-muted-foreground"
+                          )} />
+                          {hasAnswer && (
+                            <div className="absolute -top-1 -right-1 h-2 w-2 bg-secondary rounded-full" />
+                          )}
+                        </div>
+                        <div
+                          className={wordWrapEnabled ? "whitespace-normal break-words" : "truncate"}
+                          title={item.question}
+                        >
+                          <span className="font-medium">{item.question}</span>
+                          {hasAnswer && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <Badge 
+                                variant={isExpanded ? "default" : "secondary"} 
+                                className="text-xs px-2 py-0.5 font-medium"
+                              >
+                                {isExpanded ? "▼ Hide Answer" : "▶ View Answer"}
+                              </Badge>
+                              {item.answerSources && item.answerSources.length > 0 && (
+                                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                                  <FileText className="h-3 w-3 mr-1" />
+                                  {item.answerSources.length} source{item.answerSources.length !== 1 ? 's' : ''}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                          {item.status === "Open" && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 text-muted-foreground">
+                                Awaiting response
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    {!isBuySide && (
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Building className="h-3 w-3 text-muted-foreground" />
+                          {formatBuyerId(item.buyerId)}
+                        </div>
+                      </TableCell>
+                    )}
+                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">
+                        {item.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{getPriorityBadge(item.priority, item.id)}</TableCell>
+                  </TableRow>
+                  
+                  {/* Expandable Answer Row */}
+                  {hasAnswer && isExpanded && (
+                    <TableRow className="bg-muted/20 hover:bg-muted/20">
+                      <TableCell colSpan={isBuySide ? 4 : 5} className="py-4 px-6">
+                        <div className="max-w-4xl">
+                          <AnswerCollapsible
+                            question={item}
+                            onViewDocument={onViewDocument}
+                            onGenerateAnswer={onGenerateAnswer}
+                            isGenerating={generatingAnswers.has(item.id)}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              )
+            })}
           </TableBody>
         </Table>
       </div>
