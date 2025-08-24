@@ -35,42 +35,37 @@ interface FilePreview {
 }
 
 const folders = [
-  "Financial Statements",
-  "Legal Documents",
-  "Contracts",
-  "IP Portfolio",
-  "HR Documents",
-  "IT & Security",
-  "Operations",
-  "Marketing Materials",
+  "Legal",
+  "Commercial", 
+  "Financial",
+  "HR",
+  "IP",
+  "IT",
 ]
 
 const getAISuggestion = (fileName: string) => {
   const name = fileName.toLowerCase()
 
-  if (name.includes("financial") || name.includes("balance") || name.includes("income") || name.includes("cash")) {
-    return { folder: "Financial Statements", confidence: 95, reason: "Contains financial keywords" }
+  if (name.includes("financial") || name.includes("balance") || name.includes("income") || name.includes("cash") || name.includes("revenue") || name.includes("audit")) {
+    return { folder: "Financial", confidence: 95, reason: "Contains financial keywords" }
   }
-  if (name.includes("contract") || name.includes("agreement") || name.includes("terms")) {
-    return { folder: "Contracts", confidence: 90, reason: "Contract-related document" }
+  if (name.includes("legal") || name.includes("compliance") || name.includes("regulation") || name.includes("law") || name.includes("litigation")) {
+    return { folder: "Legal", confidence: 88, reason: "Legal terminology detected" }
   }
-  if (name.includes("legal") || name.includes("compliance") || name.includes("regulation")) {
-    return { folder: "Legal Documents", confidence: 88, reason: "Legal terminology detected" }
+  if (name.includes("patent") || name.includes("trademark") || name.includes("ip") || name.includes("intellectual") || name.includes("copyright")) {
+    return { folder: "IP", confidence: 92, reason: "Intellectual property content" }
   }
-  if (name.includes("patent") || name.includes("trademark") || name.includes("ip") || name.includes("intellectual")) {
-    return { folder: "IP Portfolio", confidence: 92, reason: "Intellectual property content" }
+  if (name.includes("employee") || name.includes("hr") || name.includes("payroll") || name.includes("benefits") || name.includes("personnel")) {
+    return { folder: "HR", confidence: 87, reason: "Human resources related" }
   }
-  if (name.includes("employee") || name.includes("hr") || name.includes("payroll") || name.includes("benefits")) {
-    return { folder: "HR Documents", confidence: 87, reason: "Human resources related" }
+  if (name.includes("security") || name.includes("it") || name.includes("tech") || name.includes("system") || name.includes("software")) {
+    return { folder: "IT", confidence: 85, reason: "Technology/IT content" }
   }
-  if (name.includes("security") || name.includes("it") || name.includes("tech") || name.includes("system")) {
-    return { folder: "IT & Security", confidence: 85, reason: "Technology/security content" }
-  }
-  if (name.includes("marketing") || name.includes("brand") || name.includes("campaign")) {
-    return { folder: "Marketing Materials", confidence: 89, reason: "Marketing-related content" }
+  if (name.includes("contract") || name.includes("agreement") || name.includes("terms") || name.includes("commercial") || name.includes("sales") || name.includes("purchase")) {
+    return { folder: "Commercial", confidence: 90, reason: "Commercial/contract document" }
   }
 
-  return { folder: "Operations", confidence: 70, reason: "General business document" }
+  return { folder: "Commercial", confidence: 70, reason: "General business document" }
 }
 
 export function BulkUploadZone() {
@@ -228,19 +223,17 @@ export function BulkUploadZone() {
 
   const getFolderAccessUsers = (folder: string): string[] => {
     const folderAccess: Record<string, string[]> = {
-      "Financial Statements": ["John Smith (Seller Admin)", "Sarah Chen (Company Finance)", "Mike Johnson (Buyer A)"],
-      "Legal Documents": ["John Smith (Seller Admin)", "Lisa Wang (Company Legal)", "David Brown (Buyer A)"],
-      Contracts: [
+      "Legal": ["John Smith (Seller Admin)", "Lisa Wang (Company Legal)", "David Brown (Buyer A)"],
+      "Commercial": [
         "John Smith (Seller Admin)",
         "Lisa Wang (Company Legal)",
         "Mike Johnson (Buyer A)",
         "Emma Davis (Buyer B)",
       ],
-      "IP Portfolio": ["John Smith (Seller Admin)", "Lisa Wang (Company Legal)", "Tom Wilson (Buyer A)"],
-      "HR Documents": ["John Smith (Seller Admin)", "Alex Rodriguez (Company HR)", "Mike Johnson (Buyer A)"],
-      "IT & Security": ["John Smith (Seller Admin)", "Chris Lee (Company IT)", "David Brown (Buyer A)"],
-      Operations: ["John Smith (Seller Admin)", "Maria Garcia (Seller Analyst)", "Mike Johnson (Buyer A)"],
-      "Marketing Materials": ["John Smith (Seller Admin)", "Maria Garcia (Seller Analyst)", "Emma Davis (Buyer B)"],
+      "Financial": ["John Smith (Seller Admin)", "Sarah Chen (Company Finance)", "Mike Johnson (Buyer A)"],
+      "HR": ["John Smith (Seller Admin)", "Alex Rodriguez (Company HR)", "Mike Johnson (Buyer A)"],
+      "IP": ["John Smith (Seller Admin)", "Lisa Wang (Company Legal)", "Tom Wilson (Buyer A)"],
+      "IT": ["John Smith (Seller Admin)", "Chris Lee (Company IT)", "David Brown (Buyer A)"],
     }
     return folderAccess[folder] || ["John Smith (Seller Admin)"]
   }
