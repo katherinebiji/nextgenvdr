@@ -228,8 +228,8 @@ export const mockQuestions: Question[] = [
 
 export const mockProjects: Project[] = [
   {
-    id: "project-pearl",
-    name: "Project Pearl",
+            id: "project-cerebral",
+        name: "Project Cerebral",
     description: "Strategic acquisition of manufacturing assets",
     buyers: ["Buyer A", "Buyer B"],
     qaCompletionPct: 78,
@@ -237,16 +237,7 @@ export const mockProjects: Project[] = [
     status: "Active",
     dueDate: "2024-02-15",
   },
-  {
-    id: "project-diamond",
-    name: "Project Diamond",
-    description: "Technology company merger and integration",
-    buyers: ["Buyer A"],
-    qaCompletionPct: 92,
-    lastActivity: "1 day ago",
-    status: "Due Diligence",
-    dueDate: "2024-01-30",
-  },
+
 ]
 
 export const mockUsers: User[] = [

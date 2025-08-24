@@ -12,8 +12,8 @@ import { Building2, Search, Users, MessageSquare, ChevronRight, Plus } from "luc
 // Mock project data
 const projects = [
   {
-    id: "project-pearl",
-    name: "Project Pearl",
+            id: "project-cerebral",
+        name: "Project Cerebral",
     description: "Strategic acquisition of manufacturing assets",
     buyers: ["Buyer A", "Buyer B"],
     qaCompletionPct: 78,
@@ -21,26 +21,7 @@ const projects = [
     status: "Active",
     dueDate: "2024-02-15",
   },
-  {
-    id: "project-diamond",
-    name: "Project Diamond",
-    description: "Technology company merger and integration",
-    buyers: ["Buyer A"],
-    qaCompletionPct: 92,
-    lastActivity: "1 day ago",
-    status: "Due Diligence",
-    dueDate: "2024-01-30",
-  },
-  {
-    id: "project-emerald",
-    name: "Project Emerald",
-    description: "Real estate portfolio divestiture",
-    buyers: ["Buyer A", "Buyer B", "Buyer C"],
-    qaCompletionPct: 45,
-    lastActivity: "3 days ago",
-    status: "Setup",
-    dueDate: "2024-03-01",
-  },
+
   {
     id: "project-valley",
     name: "Project Valley",
