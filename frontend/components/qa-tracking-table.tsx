@@ -127,11 +127,11 @@ export function QATrackingTable({
   const getStatusBadge = (status: QATrackingItem["status"]) => {
     switch (status) {
       case "Complete":
-        return <Badge className="bg-secondary text-secondary-foreground">Complete</Badge>
+        return <Badge className="bg-purple-700 text-white">Complete</Badge>
       case "In Progress":
-        return <Badge className="bg-primary text-primary-foreground">In Progress</Badge>
+        return <Badge className="bg-purple-400 text-white">In Progress</Badge>
       case "Open":
-        return <Badge variant="outline">Open</Badge>
+        return <Badge className="bg-gray-300 text-gray-700 border border-gray-400">Open</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -179,11 +179,11 @@ export function QATrackingTable({
     const badgeContent = (() => {
       switch (priority) {
         case "High":
-          return <Badge variant="destructive">High</Badge>
+          return <Badge className="bg-purple-700 text-white">High</Badge>
         case "Medium":
-          return <Badge className="bg-primary text-primary-foreground">Medium</Badge>
+          return <Badge className="bg-purple-400 text-white">Medium</Badge>
         case "Low":
-          return <Badge variant="secondary">Low</Badge>
+          return <Badge className="bg-gray-300 text-gray-700 border border-gray-400">Low</Badge>
         default:
           return <Badge variant="outline">{priority}</Badge>
       }

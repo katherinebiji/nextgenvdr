@@ -24,21 +24,9 @@ export function QAProgressBar({
   const openPercentage = totalQuestions > 0 ? (openQuestions / totalQuestions) * 100 : 0
 
   return (
-    <div className={`w-full bg-gradient-to-r from-background to-muted/20 border border-border rounded-lg p-6 ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <h3 className="text-lg font-semibold">Q&A Progress Overview</h3>
-          <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md">
-            {completedQuestions} of {totalQuestions} questions completed
-          </span>
-        </div>
-        <div className="text-2xl font-bold text-primary">
-          {Math.round(completionPercentage)}%
-        </div>
-      </div>
-      
+    <div className={`w-full bg-gradient-to-r from-background to-muted/20 border border-border rounded-lg p-3 ${className}`}>
       {/* Multi-segment progress bar */}
-      <div className="relative h-3 mb-4 w-full bg-gray-200 rounded-full overflow-hidden">
+      <div className="relative h-2 mb-2 w-full bg-gray-200 rounded-full overflow-hidden">
         <div className="absolute inset-0 flex">
           {/* Complete segment - darkest purple */}
           <div 
@@ -59,22 +47,19 @@ export function QAProgressBar({
       </div>
       
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-purple-700">
-            <div className="w-3 h-3 bg-purple-700 rounded-sm" />
-            <span className="text-sm font-medium">{completedQuestions} Complete</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 text-purple-700">
+            <div className="w-2.5 h-2.5 bg-purple-700 rounded-sm" />
+            <span className="text-xs font-medium">{completedQuestions} Complete</span>
           </div>
-          <div className="flex items-center gap-2 text-purple-400">
-            <div className="w-3 h-3 bg-purple-400 rounded-sm" />
-            <span className="text-sm font-medium">{inProgressQuestions} In Progress</span>
+          <div className="flex items-center gap-1.5 text-purple-400">
+            <div className="w-2.5 h-2.5 bg-purple-400 rounded-sm" />
+            <span className="text-xs font-medium">{inProgressQuestions} In Progress</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-500">
-            <div className="w-3 h-3 bg-gray-300 rounded-sm border border-gray-400" />
-            <span className="text-sm font-medium">{openQuestions} Open</span>
+          <div className="flex items-center gap-1.5 text-gray-500">
+            <div className="w-2.5 h-2.5 bg-gray-300 rounded-sm border border-gray-400" />
+            <span className="text-xs font-medium">{openQuestions} Open</span>
           </div>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {totalQuestions > 0 ? `${completedQuestions} of ${totalQuestions} addressed` : 'No questions yet'}
         </div>
       </div>
     </div>
