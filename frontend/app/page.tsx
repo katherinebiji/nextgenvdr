@@ -13,7 +13,7 @@ function NextGenVDRLogo() {
       <img 
         src="/logo_transparent.png" 
         alt="NextGen VDR Logo" 
-        className="h-16 w-auto"
+        className="h-32 w-auto"
       />
     </div>
   )
@@ -23,7 +23,12 @@ function NextGenVDRLogo() {
 function RotatingMessageHero() {
   const [titleNumber, setTitleNumber] = useState(0)
   const titles = useMemo(
-    () => ["intelligent", "secure", "efficient", "powerful", "innovative"],
+    () => [
+      "Transactions",
+      "Diligence", 
+      "Deal documents",
+      "Data rooms"
+    ],
     []
   )
 
@@ -38,24 +43,17 @@ function RotatingMessageHero() {
     <div className="w-full">
       <div className="container mx-auto">
         <div className="flex gap-6 py-12 items-center justify-center flex-col">
-          {/* Security badge */}
-          <div>
-            <Button variant="secondary" size="sm" className="gap-2">
-              <Shield className="w-4 h-4" />
-              Enterprise-grade security
-            </Button>
-          </div>
+
 
           {/* Title + rotating words */}
           <div className="flex gap-4 flex-col">
-            <h2 className="text-3xl md:text-4xl max-w-2xl tracking-tighter text-center font-regular">
-              <span className="text-purple-400">NextGenVDR is</span>
-              <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-4 md:pt-1">
+                        <h2 className="text-5xl md:text-6xl max-w-2xl tracking-tighter text-center font-regular">
+              <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-1 md:pt-1">
                 &nbsp;
                 {titles.map((title, index) => (
                   <motion.span
                     key={index}
-                    className="absolute font-semibold text-purple-300"
+                    className="absolute font-semibold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent"
                     initial={{ opacity: 0, y: "-100" }}
                     transition={{ type: "spring", stiffness: 50 }}
                     animate={
@@ -68,9 +66,10 @@ function RotatingMessageHero() {
                   </motion.span>
                 ))}
               </span>
+              <span className="text-purple-400 text-2xl md:text-3xl"> made easy with NextGen VDR</span>
             </h2>
 
-            <p className="text-base md:text-lg leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center">
+            <p className="text-lg md:text-xl leading-relaxed tracking-tight text-gray-500 max-w-2xl text-center italic">
               Transform your due diligence process with AI-powered document analysis, 
               intelligent Q&A workflows, and secure collaboration tools designed for 
               modern M&A transactions.
@@ -96,10 +95,6 @@ export default function LandingPage() {
 
         {/* CTA Buttons */}
         <div className="flex flex-row gap-3 justify-center mt-6">
-          <Button size="sm" className="gap-2" variant="outline">
-            <Zap className="w-4 h-4" />
-            Learn more
-          </Button>
           <Button 
             size="sm" 
             className="gap-2" 
