@@ -325,7 +325,7 @@ export function Chatbot() {
                   >
                     <div className={`max-w-[85%] space-y-2`}>
                       <div
-                        className={`p-3 rounded-lg text-sm leading-relaxed break-words whitespace-pre-wrap ${
+                        className={`p-3 rounded-lg text-sm leading-relaxed break-words whitespace-pre-wrap word-wrap overflow-wrap-anywhere ${
                           message.isBot
                             ? "bg-muted text-foreground"
                             : "bg-primary text-primary-foreground"
