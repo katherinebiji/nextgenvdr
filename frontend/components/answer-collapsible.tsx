@@ -79,8 +79,13 @@ export function AnswerCollapsible({
           )}
         </div>
         
-        <div className="prose prose-sm max-w-none">
-          <div className="text-sm leading-relaxed text-foreground bg-muted/30 p-3 rounded-md">
+        <div className="prose prose-sm max-w-none overflow-hidden">
+          <div className="text-sm leading-relaxed text-foreground bg-muted/30 p-3 rounded-md break-words overflow-wrap-anywhere" style={{ 
+            wordBreak: 'break-word', 
+            overflowWrap: 'break-word', 
+            whiteSpace: 'pre-wrap',
+            maxWidth: '100%'
+          }}>
             {isExpanded ? question.answer : truncatedAnswer}
           </div>
           
