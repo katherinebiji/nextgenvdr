@@ -44,29 +44,29 @@ export function ProjectLayout({ children }: ProjectLayoutProps) {
 
   const isBuySide = projectId === "project-valley"
   const navigation = isBuySide ? buySideNavigation : sellSideNavigation
-  const projectName = isBuySide ? "Project Valley" : "TechCorp Acquisition"
-  const projectType = isBuySide ? "Buy-Side Due Diligence" : "Due Diligence"
+  const projectName = isBuySide ? "Project Valley" : "Project Cerebral"
+  const projectType = isBuySide ? "Buy-Side Due Diligence" : "Sell-Side Due Diligence"
 
   return (
     <div className="h-screen flex bg-background">
       {/* Sidebar */}
-      <div className="w-64 border-r border-border bg-card flex flex-col">
+      <div className="w-64 border-r flex flex-col border-purple-200 bg-purple-900">
         {/* Project Header */}
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-purple-700 bg-purple-900">
           <Link
             href="/projects"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3"
+            className="flex items-center gap-2 text-sm mb-3 text-purple-200 hover:text-white"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to Projects
           </Link>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-primary" />
+            <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-purple-700">
+              <Building2 className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="font-semibold">{projectName}</h2>
-              <p className="text-sm text-muted-foreground">{projectType}</p>
+              <h2 className="font-semibold text-white">{projectName}</h2>
+              <p className="text-sm text-purple-200">{projectType}</p>
             </div>
           </div>
         </div>
@@ -85,8 +85,8 @@ export function ProjectLayout({ children }: ProjectLayoutProps) {
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                        ? "bg-black/20 text-white"
+                        : "text-purple-100 hover:text-white hover:bg-purple-800"
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -99,8 +99,8 @@ export function ProjectLayout({ children }: ProjectLayoutProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border">
-          <div className="text-xs text-muted-foreground">
+        <div className="p-4 border-t border-purple-700 bg-purple-900">
+          <div className="text-xs text-purple-200">
             <p>VDR v2.1.0</p>
             <p>© 2024 Enterprise Banking</p>
           </div>
