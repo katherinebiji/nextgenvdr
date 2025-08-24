@@ -3,13 +3,11 @@ import json
 import os
 from typing import List, Dict, Any, Optional
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from pypdf import PdfReader
 import io
-import chromadb
-from chromadb.config import Settings
 from sqlalchemy.orm import Session
 from models.models import DocumentChunk, Document as DBDocument
 from database import get_db
@@ -42,31 +40,15 @@ class DocumentProcessor:
         try:
             os.makedirs(self.chroma_db_path, exist_ok=True)
             
-            # Create ChromaDB client
-            self.chroma_client = chromadb.PersistentClient(
-                path=self.chroma_db_path,
-                settings=Settings(
-                    anonymized_telemetry=False,
-                    allow_reset=True
-                )
-            )
-            
-            # Get or create collection
-            try:
-                self.collection = self.chroma_client.get_collection(name=self.collection_name)
-            except:
-                self.collection = self.chroma_client.create_collection(
-                    name=self.collection_name,
-                    metadata={"description": "VDR document chunks for RAG"}
-                )
-            
-            # Initialize Langchain ChromaDB wrapper
+            # Initialize Langchain ChromaDB wrapper directly
             self.vector_store = Chroma(
-                client=self.chroma_client,
                 collection_name=self.collection_name,
                 embedding_function=self.embeddings,
                 persist_directory=self.chroma_db_path
             )
+            
+            # Access the underlying collection for direct operations
+            self.collection = self.vector_store._collection
             
         except Exception as e:
             print(f"Could not initialize ChromaDB: {e}")
