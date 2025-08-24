@@ -37,6 +37,27 @@ async def upload_document(
     
     db_document = crud.create_document(db, document_create, current_user.id)
     
+    # Auto-trigger RAG processing for uploaded document
+    try:
+        doc_processor = DocumentProcessor()
+        processing_result = doc_processor.process_document(
+            db_document.content, 
+            db_document.name, 
+            db_document.id,
+            db
+        )
+        
+        # Trigger question auto-answering after document processing
+        if processing_result.get("success"):
+            from services.qa_automation import qa_automation_service
+            qa_automation_service.process_new_document(db, db_document.id)
+            
+    except Exception as e:
+        # Log error but don't fail the upload
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Auto-processing failed for document {db_document.id}: {e}")
+    
     return schemas.DocumentResponse(
         id=db_document.id,
         name=db_document.name,

@@ -114,7 +114,7 @@ def create_question(db: Session, question: schemas.QuestionCreate, user_id: str)
     db.refresh(db_question)
     return db_question
 
-def answer_question(db: Session, question_id: str, answer: str, user_id: str, related_documents: List[str]) -> Optional[models.Question]:
+def answer_question(db: Session, question_id: str, answer: str, user_id: Optional[str], related_documents: List[str]) -> Optional[models.Question]:
     question = get_question(db, question_id)
     if question:
         question.answer = answer

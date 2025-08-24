@@ -377,3 +377,88 @@ def bulk_process_documents_for_rag(
         "failed": failed,
         "results": results
     }
+
+@router.post("/batch-answer-questions")
+def batch_answer_questions(
+    request: Dict[str, Any],
+    current_user: models.User = Depends(auth.get_current_seller),
+    db: Session = Depends(get_db)
+):
+    """Batch process questions to auto-answer using available documents"""
+    from services.qa_automation import qa_automation_service
+    
+    question_ids = request.get("question_ids", [])
+    if not question_ids:
+        # Process all pending questions if none specified
+        pending_questions = crud.get_questions(db, status="pending")
+        question_ids = [q.id for q in pending_questions]
+    
+    if not question_ids:
+        return {
+            "message": "No pending questions to process",
+            "results": {
+                "answered": [],
+                "no_answer": [],
+                "errors": []
+            }
+        }
+    
+    results = qa_automation_service.batch_process_questions(db, question_ids)
+    
+    return {
+        "message": f"Processed {len(question_ids)} questions",
+        "results": results
+    }
+
+@router.post("/auto-answer-question/{question_id}")
+def auto_answer_single_question(
+    question_id: str,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Auto-answer a single question using RAG"""
+    question = crud.get_question(db, question_id)
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    
+    if question.status != "pending":
+        return {"message": "Question is not pending", "status": question.status}
+    
+    try:
+        # Use agentic RAG to answer
+        rag_response = rag_service.answer_question(question.content)
+        
+        if not rag_response.get("answer") or not rag_response.get("success"):
+            return {"message": "Could not generate answer", "error": "No answer from RAG"}
+        
+        # Find relevant documents
+        relevant_docs = doc_processor.search_similar_documents(
+            query=question.content,
+            k=3,
+            score_threshold=0.3
+        )
+        
+        relevant_doc_ids = [doc.get("document_id") for doc in relevant_docs if doc.get("document_id")]
+        
+        # Update question with answer
+        updated_question = crud.answer_question(
+            db=db,
+            question_id=question_id,
+            answer=rag_response["answer"],
+            user_id=None,  # System-generated
+            related_documents=relevant_doc_ids[:3]  # Limit to top 3
+        )
+        
+        if updated_question:
+            return {
+                "message": "Question answered successfully", 
+                "answer": rag_response["answer"],
+                "sources": relevant_doc_ids[:3],
+                "status": updated_question.status
+            }
+        else:
+            return {"message": "Failed to update question", "error": "Database update failed"}
+            
+    except Exception as e:
+        logger.error(f"Error auto-answering question {question_id}: {e}")
+        return {"message": "Error processing question", "error": str(e)}

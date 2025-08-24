@@ -375,7 +375,8 @@ export function QATrackingTable({
           <TableBody>
             {sortedItems.map((item) => {
               const isExpanded = expandedAnswers.has(item.id)
-              const hasAnswer = item.status === "Complete" && (item.answer || generatingAnswers.has(item.id))
+              const hasAnswer = item.status === "Complete" && (!!item.answer || generatingAnswers.has(item.id))
+              
               
               return (
                 <React.Fragment key={item.id}>

@@ -203,6 +203,9 @@ interface AppState {
   generateAnswerForQuestion: (questionId: string) => Promise<void>
   updateQuestionAnswer: (questionId: string, answer: string, sources: QATrackingItem["answerSources"], answeredBy: string) => void
   setQATrackingItems: (items: QATrackingItem[]) => void
+  uploadQuestionsText: (text: string) => Promise<boolean>
+  uploadQuestionsFiles: (files: File[]) => Promise<boolean>
+  loadQuestionsFromBackend: () => Promise<void>
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -428,4 +431,132 @@ export const useAppStore = create<AppState>((set, get) => ({
       ),
     })),
   setQATrackingItems: (items) => set({ qaTrackingItems: items }),
+  uploadQuestionsText: async (text) => {
+    try {
+      const response = await apiService.uploadQuestionsText(text)
+      if (response.success && response.data) {
+        // Refresh the Q&A tracking items to include new questions
+        const questionsResponse = await apiService.getQuestions()
+        if (questionsResponse.success && questionsResponse.data) {
+          const qaItems: QATrackingItem[] = questionsResponse.data.map((q: any) => ({
+            id: q.id,
+            question: q.content,
+            buyerId: q.asked_by || "unknown",
+            status: q.status === "answered" ? "Complete" : "Open",
+            team: "General",
+            category: q.tags[0] || "general",
+            subcategory: q.tags[1] || "",
+            priority: q.priority,
+            dueDate: q.asked_at ? new Date(new Date(q.asked_at).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : new Date().toISOString(),
+            reviewedByBank: "Not Started",
+            description: q.content,
+            linkedFiles: q.related_documents || [],
+            submittedDate: q.asked_at || new Date().toISOString(),
+            history: [],
+            answer: q.answer,
+            answerSources: q.related_documents?.map((docId: string) => ({
+              document_id: docId,
+              document_name: "Document",
+              chunk_index: 0,
+              start_position: 0,
+              end_position: 100,
+              content: "",
+              similarity_score: 0.9
+            })) || [],
+            answeredBy: q.answered_by,
+            answeredDate: q.answered_at
+          }))
+          set({ qaTrackingItems: qaItems })
+        }
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error("Failed to upload questions text:", error)
+      return false
+    }
+  },
+  uploadQuestionsFiles: async (files) => {
+    try {
+      const response = await apiService.uploadQuestionsFiles(files)
+      if (response.success && response.data) {
+        // Refresh the Q&A tracking items
+        const questionsResponse = await apiService.getQuestions()
+        if (questionsResponse.success && questionsResponse.data) {
+          const qaItems: QATrackingItem[] = questionsResponse.data.map((q: any) => ({
+            id: q.id,
+            question: q.content,
+            buyerId: q.asked_by || "unknown",
+            status: q.status === "answered" ? "Complete" : "Open",
+            team: "General",
+            category: q.tags[0] || "general",
+            subcategory: q.tags[1] || "",
+            priority: q.priority,
+            dueDate: q.asked_at ? new Date(new Date(q.asked_at).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : new Date().toISOString(),
+            reviewedByBank: "Not Started",
+            description: q.content,
+            linkedFiles: q.related_documents || [],
+            submittedDate: q.asked_at || new Date().toISOString(),
+            history: [],
+            answer: q.answer,
+            answerSources: q.related_documents?.map((docId: string) => ({
+              document_id: docId,
+              document_name: "Document",
+              chunk_index: 0,
+              start_position: 0,
+              end_position: 100,
+              content: "",
+              similarity_score: 0.9
+            })) || [],
+            answeredBy: q.answered_by,
+            answeredDate: q.answered_at
+          }))
+          set({ qaTrackingItems: qaItems })
+        }
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error("Failed to upload questions files:", error)
+      return false
+    }
+  },
+  loadQuestionsFromBackend: async () => {
+    try {
+      const response = await apiService.getQuestions()
+      if (response.success && response.data) {
+        const qaItems: QATrackingItem[] = response.data.map((q: any) => ({
+          id: q.id,
+          question: q.content,
+          buyerId: q.asked_by || "unknown",
+          status: q.status === "answered" ? "Complete" : "Open",
+          team: "General",
+          category: q.tags[0] || "general",
+          subcategory: q.tags[1] || "",
+          priority: q.priority,
+          dueDate: q.asked_at ? new Date(new Date(q.asked_at).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : new Date().toISOString(),
+          reviewedByBank: "Not Started",
+          description: q.content,
+          linkedFiles: q.related_documents || [],
+          submittedDate: q.asked_at || new Date().toISOString(),
+          history: [],
+          answer: q.answer,
+          answerSources: q.related_documents?.map((docId: string) => ({
+            document_id: docId,
+            document_name: "Document",
+            chunk_index: 0,
+            start_position: 0,
+            end_position: 100,
+            content: "",
+            similarity_score: 0.9
+          })) || [],
+          answeredBy: q.answered_by,
+          answeredDate: q.answered_at
+        }))
+        set({ qaTrackingItems: qaItems })
+      }
+    } catch (error) {
+      console.error("Failed to load questions from backend:", error)
+    }
+  },
 }))

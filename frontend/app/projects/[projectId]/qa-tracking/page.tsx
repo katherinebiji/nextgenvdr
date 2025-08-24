@@ -7,7 +7,6 @@ import { QuestionDrawer } from "@/components/question-drawer"
 import { BreadcrumbNav } from "@/components/breadcrumb-nav"
 import { Chatbot } from "@/components/chatbot"
 import { DocumentPreviewModal } from "@/components/document-preview-modal"
-import { mockQATrackingItems } from "@/lib/mock-data"
 import { useAppStore } from "@/lib/store"
 
 export default function QATrackingPage() {
@@ -15,16 +14,15 @@ export default function QATrackingPage() {
   const projectId = params.projectId as string
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [qaItems, setQaItems] = useState(mockQATrackingItems)
   const [generatingAnswers, setGeneratingAnswers] = useState<Set<string>>(new Set())
   const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(null)
   const [previewHighlights, setPreviewHighlights] = useState<any[]>([])
   
-  const { generateAnswerForQuestion, setQATrackingItems } = useAppStore()
+  const { generateAnswerForQuestion, setQATrackingItems, loadQuestionsFromBackend, qaTrackingItems } = useAppStore()
 
   const isBuySide = projectId === "project-valley"
 
-  const selectedItem = selectedItemId ? qaItems.find((item) => item.id === selectedItemId) : null
+  const selectedItem = selectedItemId ? qaTrackingItems.find((item) => item.id === selectedItemId) : null
 
   const handleItemClick = (item: any) => {
     setSelectedItemId(item.id)
@@ -36,26 +34,25 @@ export default function QATrackingPage() {
     setSelectedItemId(null)
   }
 
+  // Load questions from backend on component mount
   useEffect(() => {
-    setQATrackingItems(qaItems)
-  }, [qaItems, setQATrackingItems])
+    loadQuestionsFromBackend()
+  }, [loadQuestionsFromBackend])
 
   const handlePriorityChange = (itemId: string, newPriority: "High" | "Medium" | "Low") => {
-    setQaItems((prevItems) => prevItems.map((item) => (item.id === itemId ? { ...item, priority: newPriority } : item)))
+    // Update priority in store
+    const updatedItems = qaTrackingItems.map((item) => 
+      item.id === itemId ? { ...item, priority: newPriority } : item
+    )
+    setQATrackingItems(updatedItems)
   }
 
   const handleGenerateAnswer = async (questionId: string) => {
     setGeneratingAnswers(prev => new Set(prev).add(questionId))
     try {
       await generateAnswerForQuestion(questionId)
-      setQaItems(prevItems => prevItems.map(item => {
-        if (item.id === questionId) {
-          // In a real app, this would be updated from the store
-          // For now, we'll simulate the update locally
-          return item
-        }
-        return item
-      }))
+      // Reload the questions to get the updated answer from the backend
+      await loadQuestionsFromBackend()
     } catch (error) {
       console.error("Failed to generate answer:", error)
     } finally {
@@ -96,7 +93,7 @@ export default function QATrackingPage() {
       {/* Content */}
       <div className="flex-1 overflow-auto p-6">
         <QATrackingTable
-          items={qaItems}
+          items={qaTrackingItems}
           onItemClick={handleItemClick}
           selectedItemId={selectedItemId}
           isBuySide={isBuySide}

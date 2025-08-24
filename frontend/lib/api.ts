@@ -251,6 +251,35 @@ class ApiService {
     })
   }
 
+  // Questions
+  async uploadQuestionsText(text: string): Promise<ApiResponse<any[]>> {
+    return this.makeRequest('/questions/upload-text', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    })
+  }
+
+  async uploadQuestionsFiles(files: File[]): Promise<ApiResponse<any[]>> {
+    const formData = new FormData()
+    files.forEach(file => formData.append('files', file))
+
+    return this.makeRequest('/questions/upload-files', {
+      method: 'POST',
+      headers: {}, // Remove Content-Type for FormData
+      body: formData,
+    })
+  }
+
+  async getQuestions(): Promise<ApiResponse<any[]>> {
+    return this.makeRequest('/questions/')
+  }
+
+  async autoAnswerQuestion(questionId: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/ai/auto-answer-question/${questionId}`, {
+      method: 'POST',
+    })
+  }
+
   // Utility methods
   isAuthenticated(): boolean {
     return !!this.token

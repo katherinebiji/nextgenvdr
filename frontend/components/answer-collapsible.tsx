@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, ChevronUp, FileText, Eye, Loader2 } from "lucide-react"
+import { ChevronDown, ChevronUp, FileText, Eye, Loader2, MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { QATrackingItem } from "@/lib/store"
 

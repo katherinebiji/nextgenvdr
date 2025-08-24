@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import json
@@ -7,6 +7,7 @@ from database import get_db
 from models import schemas, models
 import crud
 import auth
+from services.question_processor import question_processor
 
 router = APIRouter()
 
@@ -140,3 +141,96 @@ def update_question_status(
         answered_at=question.answered_at,
         related_documents=[doc.id for doc in question.related_documents]
     )
+
+@router.post("/upload-text", response_model=List[schemas.QuestionResponse])
+def upload_questions_text(
+    text_input: schemas.QuestionTextUpload,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Process text input and create questions"""
+    if not text_input.text.strip():
+        raise HTTPException(status_code=400, detail="Text input cannot be empty")
+    
+    # Extract questions from text
+    questions = question_processor.extract_questions_from_text(text_input.text)
+    
+    if not questions:
+        raise HTTPException(status_code=400, detail="No valid questions found in the text")
+    
+    # Create questions in database
+    created_questions = question_processor.create_questions_from_upload(
+        db, questions, current_user.id
+    )
+    
+    return [
+        schemas.QuestionResponse(
+            id=q["id"],
+            title=q["title"],
+            content=q["content"],
+            status=q["status"],
+            priority=q["priority"],
+            tags=json.loads(q["tags"]),
+            asked_by=current_user.name,
+            asked_at=q["asked_at"],
+            answer=None,
+            answered_by=None,
+            answered_at=None,
+            related_documents=[]
+        )
+        for q in created_questions
+    ]
+
+@router.post("/upload-files", response_model=List[schemas.QuestionResponse])
+def upload_questions_files(
+    files: List[UploadFile] = File(...),
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Process uploaded files and create questions"""
+    import logging
+    logger = logging.getLogger(__name__)
+    all_created_questions = []
+    
+    for file in files:
+        try:
+            # Read file content
+            file_content = file.file.read()
+            file.file.seek(0)  # Reset file pointer
+            
+            # Extract questions from file
+            questions = question_processor.process_file_upload(
+                file.filename, file_content, file.content_type
+            )
+            
+            if questions:
+                # Create questions in database
+                created_questions = question_processor.create_questions_from_upload(
+                    db, questions, current_user.id, file.filename
+                )
+                all_created_questions.extend(created_questions)
+        
+        except Exception as e:
+            logger.error(f"Error processing file {file.filename}: {e}")
+            continue
+    
+    if not all_created_questions:
+        raise HTTPException(status_code=400, detail="No valid questions found in uploaded files")
+    
+    return [
+        schemas.QuestionResponse(
+            id=q["id"],
+            title=q["title"],
+            content=q["content"],
+            status=q["status"],
+            priority=q["priority"],
+            tags=json.loads(q["tags"]),
+            asked_by=current_user.name,
+            asked_at=q["asked_at"],
+            answer=None,
+            answered_by=None,
+            answered_at=None,
+            related_documents=[]
+        )
+        for q in all_created_questions
+    ]

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Upload, FileText, X, HelpCircle, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAppStore } from "@/lib/store"
 
 interface UploadedFile {
   id: string
@@ -21,7 +22,9 @@ export function UploadQuestions() {
   const [textQuestions, setTextQuestions] = useState("")
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { uploadQuestionsText, uploadQuestionsFiles } = useAppStore()
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -89,17 +92,49 @@ export function UploadQuestions() {
     return "📄"
   }
 
-  const handleSubmit = () => {
-    // Process text questions and uploaded files
-    console.log("[v0] Submitting questions:", { textQuestions, uploadedFiles })
-
-    // Update file status to processing
-    setUploadedFiles((prev) => prev.map((file) => ({ ...file, status: "processing" })))
-
-    // Simulate processing
-    setTimeout(() => {
-      setUploadedFiles((prev) => prev.map((file) => ({ ...file, status: "completed" })))
-    }, 2000)
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+    
+    try {
+      let success = false
+      
+      // Submit text questions if any
+      if (textQuestions.trim()) {
+        success = await uploadQuestionsText(textQuestions)
+        if (success) {
+          setTextQuestions("")
+        }
+      }
+      
+      // Submit uploaded files if any
+      if (uploadedFiles.length > 0) {
+        setUploadedFiles((prev) => prev.map((file) => ({ ...file, status: "processing" })))
+        
+        // Convert UploadedFile to File objects (this is a mock - in real app you'd store actual File objects)
+        const files: File[] = []
+        const fileSuccess = await uploadQuestionsFiles(files)
+        
+        if (fileSuccess) {
+          setUploadedFiles((prev) => prev.map((file) => ({ ...file, status: "completed" })))
+          success = true
+        } else {
+          setUploadedFiles((prev) => prev.map((file) => ({ ...file, status: "pending" })))
+        }
+      }
+      
+      if (success) {
+        // Reset form after successful submission
+        setTimeout(() => {
+          setUploadedFiles([])
+        }, 1000)
+      }
+      
+    } catch (error) {
+      console.error("Error submitting questions:", error)
+      setUploadedFiles((prev) => prev.map((file) => ({ ...file, status: "pending" })))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -124,11 +159,11 @@ export function UploadQuestions() {
             <p className="text-sm text-muted-foreground">{textQuestions.length} characters</p>
             <Button
               onClick={handleSubmit}
-              disabled={!textQuestions.trim() && uploadedFiles.length === 0}
+              disabled={(!textQuestions.trim() && uploadedFiles.length === 0) || isSubmitting}
               className="flex items-center gap-2"
             >
               <Send className="h-4 w-4" />
-              Submit Questions
+              {isSubmitting ? "Submitting..." : "Submit Questions"}
             </Button>
           </div>
         </CardContent>

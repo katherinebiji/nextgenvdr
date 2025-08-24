@@ -102,3 +102,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+class QuestionTextUpload(BaseModel):
+    text: str
