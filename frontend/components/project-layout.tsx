@@ -3,6 +3,8 @@
 import type React from "react"
 import Link from "next/link"
 import { usePathname, useParams } from "next/navigation"
+import Image from "next/image";
+import logo from "@/public/logo!!!.png";
 import {
   FileText,
   MessageSquare,
@@ -61,9 +63,9 @@ export function ProjectLayout({ children }: ProjectLayoutProps) {
             Back to Projects
           </Link>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-purple-700">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
+          <div>
+                <Image src="/logo!!!.png" alt="Logo" width={100} height={100} />
+          </div>
             <div>
               <h2 className="font-semibold text-white">{projectName}</h2>
               <p className="text-sm text-purple-200">{projectType}</p>
