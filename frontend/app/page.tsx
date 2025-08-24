@@ -41,9 +41,12 @@ const FeatureCard = ({ icon: Icon, title, desc }: { icon: any; title: string; de
 
 function NextGenVDRLogo() {
   return (
-    <div className="flex items-center gap-2">
-      <Image src="/logo!!!.png" alt="NextGen VDR" width={40} height={40} className="rounded" priority />
-      <span className="text-lg font-semibold tracking-tight">NextGen VDR</span>
+    <div className="flex justify-center mb-6">
+      <img 
+        src="/logo_transparent.png" 
+        alt="NextGen VDR Logo" 
+        className="h-32 w-auto"
+      />
     </div>
   );
 }

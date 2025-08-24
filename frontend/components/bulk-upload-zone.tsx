@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { Upload, File, X, CheckCircle, AlertCircle, Folder, Brain, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -136,6 +136,18 @@ export function BulkUploadZone() {
   const { currentUser, currentProject, uploadFileToBackend, processDocumentForRAG } = useAppStore()
   const subfolders = getSubfolders()
 
+  // Update existing files when folder mode changes
+  useEffect(() => {
+    setFiles(prevFiles => 
+      prevFiles.map(file => ({
+        ...file,
+        folder: folderMode === "ai" 
+          ? file.aiSuggestion?.folder 
+          : defaultFolder || undefined
+      }))
+    )
+  }, [folderMode, defaultFolder])
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(true)
@@ -174,7 +186,7 @@ export function BulkUploadZone() {
       const aiSuggestion = getAISuggestion(file.name)
       
       const uploadFile: UploadFile = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: Math.random().toString(36).substring(2, 11),
         name: file.name,
         size: file.size,
         status: "pending",
@@ -211,7 +223,7 @@ export function BulkUploadZone() {
 
           try {
             // Upload to backend
-            const success = await uploadFileToBackend(file.content, [file.folder])
+            const success = await uploadFileToBackend(file.content!, [file.folder])
             
             if (success) {
               // Get the uploaded document info to get the document ID

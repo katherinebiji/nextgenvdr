@@ -11,18 +11,7 @@ import apiService from "@/lib/api"
 import { motion } from "framer-motion"
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
 
-// --- NextGen VDR Logo Component ---
-function NextGenVDRLogo() {
-  return (
-    <div className="flex justify-center mb-6">
-      <img 
-        src="/logo!!!.png" 
-        alt="NextGen VDR Logo" 
-        className="h-16 w-auto"
-      />
-    </div>
-  )
-}
+
 
 
 // --- Login Page ---
@@ -78,8 +67,12 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-6 relative z-10">
         {/* Logo and Header */}
         <div className="text-center space-y-3">
-          <div className="flex justify-center">
-            <NextGenVDRLogo />
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/logo_transparent.png" 
+              alt="NextGen VDR Logo" 
+              className="h-32 w-auto"
+            />
           </div>
           <div className="space-y-2">
             <p className="text-muted-foreground">Deal documents made easy with AI</p>
@@ -89,14 +82,8 @@ export default function LoginPage() {
         
 
         {/* Login/Register Form */}
-        <GlowCard 
-          customSize 
-          width="100%" 
-          height="auto"
-          glowColor="purple" 
-          className="border-purple-500/30 shadow-2xl bg-black/90 backdrop-blur-md hover:border-purple-400/50"
-        >
-          <div className="p-5">
+        <div className="bg-card border border-border rounded-lg shadow-lg shadow-black/10 dark:shadow-white/10">
+          <div className="p-6">
             <div className="space-y-1 mb-5">
               <h2 className="text-xl font-semibold text-foreground">
                 {isLogin ? "Sign in" : "Create Account"}
@@ -193,7 +180,7 @@ export default function LoginPage() {
               </div>
             </form>
           </div>
-        </GlowCard>
+      </div>
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground mt-6">
