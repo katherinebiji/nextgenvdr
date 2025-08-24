@@ -5,10 +5,23 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Building2, Mail, Lock, User } from "lucide-react"
+import { GlowCard } from "@/components/ui/spotlight-card"
+import { Mail, Lock, User } from "lucide-react"
 import apiService from "@/lib/api"
+
+// NextGen VDR Logo Component
+function NextGenVDRLogo() {
+  return (
+    <div className="flex items-center justify-center">
+      <img 
+        src="/logo!!!.png" 
+        alt="NextGen VDR Logo" 
+        className="h-50 w-auto"
+      />
+    </div>
+  )
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -55,27 +68,31 @@ export default function LoginPage() {
         {/* Logo and Header */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="bg-primary rounded-lg p-3">
-              <Building2 className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <NextGenVDRLogo />
           </div>
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold font-serif text-foreground">Virtual Data Room</h1>
-            <p className="text-muted-foreground">Secure access to your deal documents</p>
+            <p className="text-muted-foreground">Deal documents made easy with AI</p>
           </div>
         </div>
 
         {/* Login/Register Form */}
-        <Card className="border-border shadow-lg">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold">
-              {isLogin ? "Sign in" : "Create Account"}
-            </CardTitle>
-            <CardDescription>
-              {isLogin ? "Enter your credentials to access your data rooms" : "Register for NextGenVDR access"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <GlowCard 
+          customSize 
+          width="100%" 
+          height="auto"
+          glowColor="purple" 
+          className="border-purple-500/30 shadow-2xl bg-black/90 backdrop-blur-md hover:border-purple-400/50"
+        >
+          <div className="p-6">
+            <div className="space-y-1 mb-6">
+              <h2 className="text-2xl font-semibold text-foreground">
+                {isLogin ? "Sign in" : "Create Account"}
+              </h2>
+              <p className="text-muted-foreground">
+                {isLogin ? "Enter your credentials to access your data rooms" : "Register for NextGenVDR access"}
+              </p>
+            </div>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
@@ -163,12 +180,14 @@ export default function LoginPage() {
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </GlowCard>
+
+        
 
         {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground">
-          <p>Secure • Compliant • Trusted by leading investment banks</p>
+        <div className="text-center text-sm text-muted-foreground mt-8">
+          <p>Secure • Compliant • Trusted</p>
         </div>
       </div>
     </div>
