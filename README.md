@@ -1,56 +1,90 @@
-# 📂 Next Gen VDR (Virtual Data Room)  
-**AI-Powered Diligence & Collaboration for the Next Generation of Deals**  
+- **Scalability**: Handle multiple deals simultaneously
+- **Insights**: Benchmark against comprehensive deal database
 
----
+## 🚀 Getting Started
 
-## 📌 Overview  
-This project was built during **Cerebral Valley’s NYC 2025 Hackathon**, reimagining the **Virtual Data Room (VDR)** for tomorrow’s dealmakers. Our solution augments the traditional VDR with **AI-powered Q&A management, document intelligence, and workflow automation** — making due diligence faster, smarter, and more secure.  
+### Prerequisites
 
----
+- Python 3.9+
+- Node.js 18+
+- pnpm package manager
 
-## 🧩 Problem  
-- Existing VDRs (Intralinks, Datasite, etc.) focus on file storage but **don’t reduce the manual burden of Q&A, categorization, and relevance checking**.  
-- Analysts and bankers waste hours triaging buyer questions, tagging documents, and chasing down internal teams.  
-- Buyers often receive **slow, fragmented responses** that delay deals and increase transaction costs.  
+### Backend Setup
 
----
+1. **Navigate to project root**
+   ```bash
+   cd nextgenvdr
+   ```
 
-## 💡 Our Solution  
-Tomorrow’s VDR introduces **AI as a first-class participant** in the diligence process:  
+2. **Create and activate virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-- **🔎 Smart Question Management**  
-  - Buyers upload questions (CSV, Word, Excel).  
-  - AI auto-tags categories (legal, financial, commercial, HR, etc.) for routing.  
+3. **Install backend dependencies**
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
 
-- **📂 Document Relevance Engine**  
-  - Seller uploads documents.  
-  - AI matches them to outstanding buyer questions across multiple buyers.  
-  - Flags irrelevant uploads (wrong company / off-topic docs).
+4. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your OpenAI API key and other configurations
+   ```
 
-- **⚡ Real-Time Diligence Tracker**  
-  - Unified seller-side view of all buyer Q&A.  
-  - Tracks status, responsible team, and outstanding requests.  
+5. **Start the FastAPI backend server**
+   ```bash
+   cd backend
+   python start.py
+   ```
 
-- **🛡️ Deal-Ready UX**  
-  - Banker-friendly interface with sticky tables, pill badges, and priority sorting.  
-  - Mirrors workflows of top VDRs but with built-in AI copilots.  
+   The backend API will be available at `http://localhost:8000`
+   - API Documentation: `http://localhost:8000/docs`
+   - Alternative docs: `http://localhost:8000/redoc`
 
----
+### Frontend Setup
 
-## 👥 End Users  
-- **Investment Banks / Advisors** → streamline Q&A triage, faster execution.  
-- **Corporate Sellers** → less back-and-forth, fewer missed questions.  
-- **Buyers / PE Firms** → cleaner, faster access to relevant documents.  
+1. **Navigate to frontend directory**
+   ```bash
+   cd "Virtual Data Room"
+   ```
 
----
+2. **Install frontend dependencies**
+   ```bash
+   pnpm i
+   ```
 
-## 🚀 Getting Started  
-```bash
-# Clone repo
-git clone https://github.com/username/tomorrows-vdr.git
+3. **Start the Next.js development server**
+   ```bash
+   npx next dev
+   ```
 
-# Install dependencies
-npm install
+   The frontend application will be available at `http://localhost:3000`
 
-# Run dev server
-npm run dev
+### 🧠 AI-Powered Features
+
+The backend includes advanced RAG (Retrieval-Augmented Generation) capabilities:
+
+- **Document Processing**: Automatic chunking and embedding of financial documents
+- **Agentic RAG**: LangChain-powered intelligent document retrieval
+- **Chat Interface**: Natural language queries across uploaded documents
+- **Smart Q&A**: Context-aware question answering with source attribution
+
+### API Endpoints
+
+Key backend endpoints include:
+
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User authentication
+- `POST /documents/upload` - Document upload with AI processing
+- `POST /ai/rag-chat` - Interactive chat with document context
+- `POST /ai/process-document-for-rag` - Process documents for vector search
+- `GET /ai/rag-status` - RAG system health check
+
+### Architecture
+
+- **Frontend**: Next.js 15 with React 19, TypeScript, shadcn/ui, Tailwind CSS
+- **Backend**: FastAPI with SQLAlchemy, OpenAI integration, LangChain RAG
+- **Database**: SQLite (development), PostgreSQL (production ready)
+- **AI/ML**: OpenAI GPT-4o-mini, text-embedding-3-small, FAISS vector database
