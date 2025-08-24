@@ -147,6 +147,10 @@ class ApiService {
     })
   }
 
+  async getDocumentPreview(documentId: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/documents/${documentId}/preview`)
+  }
+
   // Questions
   async createQuestion(question: {
     title: string
@@ -172,6 +176,12 @@ class ApiService {
     return this.makeRequest(`/questions/${questionId}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
+    })
+  }
+
+  async deleteQuestion(questionId: string): Promise<ApiResponse<any>> {
+    return this.makeRequest(`/questions/${questionId}`, {
+      method: 'DELETE',
     })
   }
 

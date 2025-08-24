@@ -302,7 +302,7 @@ export function Chatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="w-96 h-[500px] shadow-lg border rounded-lg overflow-hidden bg-white">
+        <div className="w-96 h-[500px] shadow-lg border rounded-lg overflow-hidden bg-white" style={{ maxWidth: '384px' }}>
           <div className="flex flex-row items-center justify-between px-3 py-1.5 border-b rounded-t-lg" style={{ backgroundColor: '#9333ea' }}>
             <h3 className="text-xs font-medium text-white">AI Assistant</h3>
             <Button
@@ -316,20 +316,29 @@ export function Chatbot() {
           </div>
           <div className="flex flex-col h-[calc(100%-36px)]">
             {/* Messages */}
-            <div className="flex-1 overflow-auto p-4">
-              <div className="space-y-4">
+            <div className="flex-1 overflow-auto p-4" style={{ maxWidth: '100%' }}>
+              <div className="space-y-4" style={{ maxWidth: '100%' }}>
                 {messages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${message.isBot ? "justify-start" : "justify-end"}`}
+                    style={{ maxWidth: '100%', overflow: 'hidden' }}
                   >
-                    <div className={`max-w-[85%] space-y-2`}>
+                    <div className={`max-w-[85%] space-y-2 min-w-0`} style={{ maxWidth: '85%' }}>
                       <div
-                        className={`p-3 rounded-lg text-sm leading-relaxed break-words whitespace-pre-wrap word-wrap overflow-wrap-anywhere ${
+                        className={`p-3 rounded-lg text-sm leading-relaxed break-words whitespace-pre-wrap overflow-hidden ${
                           message.isBot
                             ? "bg-muted text-foreground"
                             : "bg-primary text-primary-foreground"
                         }`}
+                        style={{ 
+                          wordBreak: 'break-word', 
+                          overflowWrap: 'break-word', 
+                          hyphens: 'auto',
+                          maxWidth: '100%',
+                          whiteSpace: 'pre-wrap',
+                          wordWrap: 'break-word'
+                        }}
                       >
                         {message.text}
                       </div>

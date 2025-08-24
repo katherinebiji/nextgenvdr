@@ -234,3 +234,27 @@ def upload_questions_files(
         )
         for q in all_created_questions
     ]
+
+@router.delete("/{question_id}")
+def delete_question(
+    question_id: str,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Only allow buyers to delete their own questions
+    if current_user.role != "buyer":
+        raise HTTPException(status_code=403, detail="Only buyers can delete questions")
+    
+    # Check if the question exists and belongs to the current user
+    question = crud.get_question(db, question_id)
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    
+    if question.asked_by_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only delete your own questions")
+    
+    success = crud.delete_question(db, question_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete question")
+    
+    return {"message": "Question deleted successfully"}
