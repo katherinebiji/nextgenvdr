@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MessageSquare, Search, Filter, ArrowUpDown, ExternalLink, WrapText, Edit } from "lucide-react"
+import { QAProgressBar } from "@/components/qa-progress-bar"
 import { cn } from "@/lib/utils"
 
 interface QATrackingItem {
@@ -233,9 +234,18 @@ export function QATrackingTable({
     }
   }
 
+  // Calculate progress statistics from filtered items
+  const totalQuestions = filteredItems.length
+  const completedQuestions = filteredItems.filter(item => item.status === "Complete").length
+  const inProgressQuestions = filteredItems.filter(item => item.status === "In Progress").length
+  const openQuestions = filteredItems.filter(item => item.status === "Open").length
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
+
+      
+
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -297,6 +307,14 @@ export function QATrackingTable({
           </Select>
         </div>
       </div>
+
+      {/* Progress Bar */}
+      <QAProgressBar
+        totalQuestions={totalQuestions}
+        completedQuestions={completedQuestions}
+        inProgressQuestions={inProgressQuestions}
+        openQuestions={openQuestions}
+      />
 
       {/* Table */}
       <div className="border border-border rounded-lg overflow-hidden">
