@@ -143,4 +143,70 @@ export class FileStorageManager {
       console.error('Failed to download file:', error)
     }
   }
+
+  static bulkDeleteFiles(userId: string, projectId: string, fileIds: string[]): void {
+    const storage = this.getStorage()
+    
+    if (storage[userId]?.[projectId]) {
+      storage[userId][projectId] = storage[userId][projectId].filter(f => !fileIds.includes(f.id))
+      this.saveStorage(storage)
+    }
+  }
+
+  static purgeAllFiles(userId: string, projectId: string): void {
+    const storage = this.getStorage()
+    
+    if (storage[userId]?.[projectId]) {
+      storage[userId][projectId] = []
+      this.saveStorage(storage)
+    }
+  }
+
+  static purgeUserData(userId: string): void {
+    const storage = this.getStorage()
+    
+    if (storage[userId]) {
+      delete storage[userId]
+      this.saveStorage(storage)
+    }
+  }
+
+  static purgeAllData(): void {
+    if (typeof window === 'undefined') return
+    
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch (error) {
+      console.error('Failed to purge all data:', error)
+    }
+  }
+
+  static getStorageInfo(): { totalFiles: number, totalSizeBytes: number, sizeFormatted: string } {
+    const storage = this.getStorage()
+    let totalFiles = 0
+    let totalSizeBytes = 0
+    
+    Object.values(storage).forEach(userStorage => {
+      Object.values(userStorage).forEach(projectFiles => {
+        totalFiles += projectFiles.length
+        projectFiles.forEach(file => {
+          // Approximate size from base64 content (base64 is ~33% larger than original)
+          totalSizeBytes += Math.floor(file.content.length * 0.75)
+        })
+      })
+    })
+    
+    const formatSize = (bytes: number): string => {
+      const sizes = ['B', 'KB', 'MB', 'GB']
+      if (bytes === 0) return '0 B'
+      const i = Math.floor(Math.log(bytes) / Math.log(1024))
+      return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i]
+    }
+    
+    return {
+      totalFiles,
+      totalSizeBytes,
+      sizeFormatted: formatSize(totalSizeBytes)
+    }
+  }
 }
