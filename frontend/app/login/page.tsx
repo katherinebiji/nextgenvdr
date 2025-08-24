@@ -64,22 +64,20 @@ export default function LoginPage() {
         className="[mask-image:radial-gradient(600px_circle_at_center,white,transparent)] inset-x-0 inset-y-[-30%] h-[160%] skew-y-12"
       />
       
-      <div className="w-full max-w-sm space-y-6 relative z-10">
+      <div className="w-full max-w-sm space-y-4 relative z-10 -mt-10">
         {/* Logo and Header */}
-        <div className="text-center space-y-3">
-          <div className="flex justify-center mb-6">
+        <div className="text-center">
+          <div className="flex justify-center">
             <img 
               src="/logo_transparent.png" 
               alt="NextGen VDR Logo" 
-              className="h-32 w-auto"
+              className="h-64 w-auto"
             />
           </div>
-          <div className="space-y-2">
+          <div className="-mt-8">
             <p className="text-muted-foreground">Deal documents made easy with AI</p>
           </div>
         </div>
-
-        
 
         {/* Login/Register Form */}
         <div className="bg-card border border-border rounded-lg shadow-lg shadow-black/10 dark:shadow-white/10">

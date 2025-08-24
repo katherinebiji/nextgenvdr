@@ -41,11 +41,11 @@ const FeatureCard = ({ icon: Icon, title, desc }: { icon: any; title: string; de
 
 function NextGenVDRLogo() {
   return (
-    <div className="flex justify-center mb-6">
+    <div className="flex justify-center mb-6 mt-3">
       <img 
-        src="/logo_transparent.png" 
+        src="/logo!!!.png" 
         alt="NextGen VDR Logo" 
-        className="h-32 w-auto"
+        className="h-1 w-auto"
       />
     </div>
   );
@@ -62,7 +62,7 @@ function RotatingMessageHero() {
 
   return (
     <h1 className="text-5xl font-semibold tracking-tight md:text-6xl">
-      <span className="relative block h-14 md:h-16">
+      <span className="relative block h-16 md:h-20 w-full min-w-[600px]">
         {words.map((w, i) => (
           <motion.span
             key={w}
@@ -92,20 +92,13 @@ export default function LandingPage() {
         repeatDelay={0.6}
         className="pointer-events-none [mask-image:radial-gradient(900px_600px_at_center,white,transparent)] inset-x-0 inset-y-[-20%] h-[140%] skew-y-6"
       />
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
 
       <header className="sticky top-0 z-20 w-full border-b bg-background/70 backdrop-blur">
         <Section className="flex h-16 items-center justify-between">
           <NextGenVDRLogo />
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground">Features</Link>
-            <Link href="#how" className="text-sm text-muted-foreground hover:text-foreground">How it works</Link>
-            <Link href="#security" className="text-sm text-muted-foreground hover:text-foreground">Security</Link>
-          </nav>
+
           <div className="flex items-center gap-2">
-            <Button variant="ghost" asChild>
-              <Link href="#demo">See demo</Link>
-            </Button>
             <div onClick={() => router.push("/login/")}> 
               <GetStartedButton />
             </div>
@@ -125,7 +118,7 @@ export default function LandingPage() {
               <GetStartedButton />
             </div>
             <Button size="lg" variant="outline" asChild>
-              <Link href="#demo">Watch 30s demo</Link>
+              <Link href="#demo">Watch 90s demo</Link>
             </Button>
           </div>
         </div>
@@ -144,7 +137,7 @@ export default function LandingPage() {
             </div>
             <div className="aspect-[16/9] w-full rounded-lg bg-muted" />
           </div>
-          <p className="mt-3 text-xs text-muted-foreground text-center">(Drop your GIF/screenshot into the browser mock above.)</p>
+          <p className="mt-3 text-xs text-muted-foreground text-center">Our product interface!</p>
         </motion.div>
       </Section>
 
