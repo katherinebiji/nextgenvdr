@@ -135,7 +135,13 @@ export default function LandingPage() {
               <span className="h-3 w-3 rounded-full bg-yellow-400" />
               <span className="h-3 w-3 rounded-full bg-green-400" />
             </div>
-            <div className="aspect-[16/9] w-full rounded-lg bg-muted" />
+            <Image
+              src="/Screenshot 2025-08-24 at 11.50.00.png"
+              alt="Q&A Tracking Interface"
+              width={1200}
+              height={675}
+              className="aspect-[16/9] w-full rounded-lg object-cover"
+            />
           </div>
           <p className="mt-3 text-xs text-muted-foreground text-center">Our product interface!</p>
         </motion.div>

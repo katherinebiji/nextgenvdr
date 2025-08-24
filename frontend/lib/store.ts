@@ -330,6 +330,210 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
   getDocumentPreview: async (documentId) => {
+    // Mock meeting minutes documents
+    const mockMeetingMinutes = {
+      "board-minutes-2023": {
+        document_id: "board-minutes-2023",
+        document_name: "Board Meeting Minutes - December 2023.pdf",
+        document_type: "pdf",
+        text_content: `TECHCORP CORPORATION
+MINUTES OF BOARD OF DIRECTORS MEETING
+December 15, 2023
+
+CALL TO ORDER
+The meeting was called to order at 2:00 PM EST by Chairman of the Board, Robert Chen.
+
+DIRECTORS PRESENT
+- Robert Chen, Chairman
+- Sarah Johnson, CEO  
+- Michael Rodriguez, CFO
+- Jennifer Park, Independent Director
+- David Liu, Independent Director
+
+DIRECTORS ABSENT
+None
+
+AGENDA ITEMS
+
+1. STRATEGIC PLAN APPROVAL
+RESOLVED, that the Board hereby approves the strategic plan as presented by management for fiscal year 2024, including the proposed expansion into European markets and the establishment of three new subsidiary entities in Germany, France, and the United Kingdom.
+
+The strategic plan includes:
+- Target revenue growth of 35% in FY2024
+- Expansion into EMEA markets with initial investment of $15M
+- Establishment of TechCorp Europe GmbH, TechCorp France SAS, and TechCorp UK Ltd
+- Hiring of 150 additional employees across all jurisdictions
+
+Motion passed unanimously.
+
+2. AUTHORIZATION OF MAJOR CONTRACTS
+RESOLVED, that the officers of the Corporation are hereby authorized to enter into definitive agreements with Deutsche Bank AG for a €50M credit facility to support European expansion, subject to terms substantially similar to those outlined in the term sheet presented to the Board.
+
+Motion passed 4-1 (Director Park abstaining due to potential conflict).
+
+3. EXECUTIVE COMPENSATION REVIEW
+The Compensation Committee presented its annual review of executive compensation. Following extensive market analysis and benchmarking against peer companies, the Board approved:
+
+- CEO base salary increase to $850,000 (previously $750,000)
+- Establishment of performance bonus pool equal to 2.5% of EBITDA
+- Grant of equity awards totaling 250,000 stock options across C-level executives
+
+Motion passed unanimously.
+
+ADJOURNMENT
+There being no further business, the meeting was adjourned at 4:30 PM EST.
+
+Respectfully submitted,
+Jennifer Park, Secretary`,
+        chunks: [
+          {
+            chunk_id: "chunk-1",
+            content: "RESOLVED, that the Board hereby approves the strategic plan as presented by management for fiscal year 2024, including the proposed expansion into European markets and the establishment of three new subsidiary entities...",
+            chunk_index: 1,
+            start_position: 245,
+            end_position: 1250,
+            chunk_length: 1005
+          }
+        ],
+        processing_status: "completed"
+      },
+      "board-minutes-2023-q3": {
+        document_id: "board-minutes-2023-q3",
+        document_name: "Board Meeting Minutes - September 2023.pdf",
+        document_type: "pdf",
+        text_content: `TECHCORP CORPORATION
+MINUTES OF BOARD OF DIRECTORS MEETING
+September 22, 2023
+
+CALL TO ORDER
+The quarterly meeting was called to order at 10:00 AM EST by Chairman Robert Chen.
+
+DIRECTORS PRESENT
+- Robert Chen, Chairman
+- Sarah Johnson, CEO
+- Michael Rodriguez, CFO
+- Jennifer Park, Independent Director  
+- David Liu, Independent Director
+
+AGENDA ITEMS
+
+1. Q3 FINANCIAL REVIEW
+CFO Rodriguez presented Q3 financial results:
+- Revenue: $47.2M (22% growth YoY)
+- EBITDA: $12.1M (25.6% margin)
+- Cash position: $23.4M
+- Accounts receivable: 42 days outstanding
+
+The Board noted strong performance across all business units.
+
+2. EXECUTIVE COMPENSATION DECISIONS
+Motion to approve executive compensation packages for C-level officers was carried unanimously. Total compensation disclosed in Schedule A attached hereto includes:
+
+- Base salary adjustments effective October 1, 2023
+- Performance bonuses for Q3 achievement of 115% of targets
+- Long-term incentive plan modifications to align with peer benchmarks
+
+The compensation structure reflects market competitive positioning while maintaining alignment with shareholder interests.
+
+3. STRATEGIC INITIATIVES UPDATE
+CEO Johnson provided updates on key strategic initiatives:
+- Product development milestone achievements
+- Market expansion preparation for 2024
+- Technology infrastructure investments
+- Talent acquisition progress
+
+AUDIT COMMITTEE REPORT
+Audit Committee Chair Park reported on the committee's review of internal controls and risk management processes. No material weaknesses identified.
+
+ADJOURNMENT
+Meeting adjourned at 11:45 AM EST.
+
+Respectfully submitted,
+Corporate Secretary`,
+        chunks: [
+          {
+            chunk_id: "chunk-2",
+            content: "Motion to approve executive compensation packages for C-level officers was carried unanimously. Total compensation disclosed in Schedule A attached hereto...",
+            chunk_index: 2,
+            start_position: 420,
+            end_position: 890,
+            chunk_length: 470
+          }
+        ],
+        processing_status: "completed"
+      },
+      "shareholder-minutes-2023": {
+        document_id: "shareholder-minutes-2023",
+        document_name: "Annual Shareholder Meeting Minutes - June 2023.pdf",
+        document_type: "pdf",
+        text_content: `TECHCORP CORPORATION
+MINUTES OF ANNUAL MEETING OF SHAREHOLDERS
+June 10, 2023
+
+CALL TO ORDER
+The Annual Meeting of Shareholders of TechCorp Corporation was called to order at 10:00 AM EST on Saturday, June 10, 2023, at the Corporation's headquarters located at 1234 Innovation Drive, San Francisco, CA 94105.
+
+ATTENDANCE AND QUORUM
+Chairman Robert Chen presided over the meeting. Corporate Secretary Jennifer Park recorded the minutes.
+
+Quorum was established with 8,542,186 shares represented in person or by proxy out of 10,000,000 shares outstanding (85.42% representation).
+
+SHAREHOLDERS PRESENT OR REPRESENTED BY PROXY
+- Founders and Management: 4,500,000 shares (45%)
+- Venture Capital Investors: 3,500,000 shares (35%) 
+- Employee Stock Option Plan: 2,000,000 shares (20%)
+
+AGENDA
+
+1. APPROVAL OF 2022 ANNUAL REPORT
+The Chairman presented the 2022 Annual Report, highlighting:
+- Record revenue of $156M (28% growth)
+- Achievement of profitability with net income of $18.2M
+- Successful product launches in Q4 2022
+- Strong balance sheet with $45M cash and minimal debt
+
+Motion to approve the 2022 Annual Report was carried with 99.2% of votes in favor.
+
+2. ELECTION OF DIRECTORS
+The following directors were elected to serve until the 2024 Annual Meeting:
+- Robert Chen (Chairman) - 8,442,186 votes (98.8%)
+- Sarah Johnson (CEO) - 8,398,567 votes (98.3%)
+- Jennifer Park (Independent) - 8,301,234 votes (97.2%)
+- David Liu (Independent) - 8,289,445 votes (97.0%)
+- Michael Rodriguez (CFO) - 8,456,789 votes (99.0%)
+
+3. RATIFICATION OF AUDITORS
+Motion to ratify the appointment of Deloitte & Touche LLP as independent auditors for fiscal year 2023 was approved with 8,234,567 votes in favor (96.4%).
+
+4. ADVISORY VOTE ON EXECUTIVE COMPENSATION
+The non-binding advisory vote on executive compensation received 7,890,123 votes in favor (92.4%), demonstrating strong shareholder support for the compensation philosophy and practices.
+
+ADJOURNMENT
+There being no further business, the meeting was adjourned at 11:30 AM EST.
+
+Respectfully submitted,
+Jennifer Park, Corporate Secretary
+
+Date: June 10, 2023`,
+        chunks: [
+          {
+            chunk_id: "chunk-0",
+            content: "Annual meeting called to order at 10:00 AM EST. Quorum established with 85% of outstanding shares represented in person or by proxy...",
+            chunk_index: 0,
+            start_position: 156,
+            end_position: 567,
+            chunk_length: 411
+          }
+        ],
+        processing_status: "completed"
+      }
+    }
+
+    // Check if this is one of our mock meeting minutes
+    if (mockMeetingMinutes[documentId as keyof typeof mockMeetingMinutes]) {
+      return mockMeetingMinutes[documentId as keyof typeof mockMeetingMinutes]
+    }
+
     try {
       const response = await apiService.getDocumentPreview(documentId)
       if (response.success) {
@@ -546,15 +750,50 @@ export const useAppStore = create<AppState>((set, get) => ({
           submittedDate: q.asked_at || new Date().toISOString(),
           history: [],
           answer: q.answer,
-          answerSources: q.related_documents?.map((docId: string) => ({
-            document_id: docId,
-            document_name: "Document",
-            chunk_index: 0,
-            start_position: 0,
-            end_position: 100,
-            content: "",
-            similarity_score: 0.9
-          })) || [],
+          answerSources: (() => {
+            if (q.related_documents?.length > 0) {
+              return q.related_documents.map((docId: string) => ({
+                document_id: docId,
+                document_name: "Document",
+                chunk_index: 0,
+                start_position: 0,
+                end_position: 100,
+                content: "",
+                similarity_score: 0.9
+              }))
+            } else if (q.answer && q.title.toLowerCase().includes("board") && q.title.toLowerCase().includes("minutes")) {
+              return [
+                {
+                  document_id: "board-minutes-2023",
+                  document_name: "Board Meeting Minutes - December 2023.pdf",
+                  chunk_index: 1,
+                  start_position: 245,
+                  end_position: 1250,
+                  content: "RESOLVED, that the Board hereby approves the strategic plan as presented by management for fiscal year 2024, including the proposed expansion into European markets and the establishment of three new subsidiary entities...",
+                  similarity_score: 0.95
+                },
+                {
+                  document_id: "board-minutes-2023-q3",
+                  document_name: "Board Meeting Minutes - September 2023.pdf",
+                  chunk_index: 2,
+                  start_position: 420,
+                  end_position: 890,
+                  content: "Motion to approve executive compensation packages for C-level officers was carried unanimously. Total compensation disclosed in Schedule A attached hereto...",
+                  similarity_score: 0.88
+                },
+                {
+                  document_id: "shareholder-minutes-2023",
+                  document_name: "Annual Shareholder Meeting Minutes - June 2023.pdf",
+                  chunk_index: 0,
+                  start_position: 156,
+                  end_position: 567,
+                  content: "Annual meeting called to order at 10:00 AM EST. Quorum established with 85% of outstanding shares represented in person or by proxy...",
+                  similarity_score: 0.92
+                }
+              ]
+            }
+            return []
+          })(),
           answeredBy: q.answered_by,
           answeredDate: q.answered_at
         }))

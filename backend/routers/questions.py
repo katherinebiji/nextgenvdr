@@ -43,25 +43,34 @@ def get_questions(
     db: Session = Depends(get_db)
 ):
     user_id = current_user.id if current_user.role == "buyer" else None
+    print(f"DEBUG: Current user: {current_user.email}, Role: {current_user.role}, ID: {current_user.id}")
+    print(f"DEBUG: Filtering by user_id: {user_id}")
     questions = crud.get_questions(db, skip=skip, limit=limit, status=status, user_id=user_id)
+    print(f"DEBUG: Found {len(questions)} questions")
     
-    return [
-        schemas.QuestionResponse(
-            id=q.id,
-            title=q.title,
-            content=q.content,
-            status=q.status,
-            priority=q.priority,
-            tags=json.loads(q.tags),
-            asked_by=q.asker.name,
-            asked_at=q.asked_at,
-            answer=q.answer,
-            answered_by=q.answerer.name if q.answerer else None,
-            answered_at=q.answered_at,
-            related_documents=[doc.id for doc in q.related_documents]
-        )
-        for q in questions
-    ]
+    result = []
+    for q in questions:
+        try:
+            question_response = schemas.QuestionResponse(
+                id=q.id,
+                title=q.title,
+                content=q.content,
+                status=q.status,
+                priority=q.priority,
+                tags=json.loads(q.tags),
+                asked_by=q.asker.name,
+                asked_at=q.asked_at,
+                answer=q.answer,
+                answered_by=q.answerer.name if q.answerer else None,
+                answered_at=q.answered_at,
+                related_documents=[doc.id for doc in q.related_documents]
+            )
+            result.append(question_response)
+        except Exception as e:
+            print(f"DEBUG: Error serializing question {q.id}: {e}")
+    
+    print(f"DEBUG: Returning {len(result)} questions")
+    return result
 
 @router.get("/{question_id}", response_model=schemas.QuestionResponse)
 def get_question(

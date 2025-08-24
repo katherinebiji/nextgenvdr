@@ -94,6 +94,7 @@ export function QATrackingTable({
     return matchesSearch && matchesStatus && matchesBuyer && matchesPriority
   })
 
+
   const sortedItems = [...filteredItems].sort((a, b) => {
     const aValue = a[sortField]
     const bValue = b[sortField]
@@ -104,6 +105,7 @@ export function QATrackingTable({
     }
     return 0
   })
+
 
   const handleSort = (field: keyof QATrackingItem) => {
     if (sortField === field) {
